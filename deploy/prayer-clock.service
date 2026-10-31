@@ -1,0 +1,20 @@
+[Unit]
+Description=Prayer clock (screen, adhan schedule, dashboard)
+# Deliberately not after the network: the screen must come up with or without it.
+After=local-fs.target
+
+[Service]
+User=prayerclock
+Group=prayerclock
+SupplementaryGroups=video audio render
+Environment=PRAYER_DATA=/var/lib/prayer-clock
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/prayer-clock/app/main.py
+Restart=always
+RestartSec=2
+Nice=-5
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

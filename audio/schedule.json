@@ -1,0 +1,59 @@
+{
+  "adhan": {
+    "file": "azan.mp3",
+    "prayers": [
+      "fajr",
+      "dhuhr",
+      "maghrib"
+    ]
+  },
+  "daily": {
+    "sun": "sun.mp3",
+    "mon": "mon.mp3",
+    "tue": "tuse.mp3",
+    "wed": "we.mp3",
+    "thu": "ther.mp3",
+    "fri": "fri.mp3",
+    "sat": "sat.mp3"
+  },
+  "items": [
+    {
+      "id": "i1792664570440",
+      "title": "دعاء كميل",
+      "file": "komail.mp3",
+      "at": "prayer",
+      "prayer": "maghrib",
+      "offset": 15,
+      "time": "08:00",
+      "days": [
+        4
+      ],
+      "enabled": true,
+      "interrupt": false
+    },
+    {
+      "id": "i1792664736989",
+      "title": "دعاء التوسل",
+      "file": "tawasel.mp3",
+      "at": "clock",
+      "prayer": "maghrib",
+      "offset": 15,
+      "time": "20:00",
+      "days": [],
+      "enabled": true,
+      "interrupt": false
+    },
+    {
+      "id": "i1792665056610",
+      "title": "حديث الكساء",
+      "file": "kisa.mp3",
+      "at": "clock",
+      "prayer": "maghrib",
+      "offset": 15,
+      "time": "15:00",
+      "days": [],
+      "enabled": true,
+      "interrupt": false
+    }
+  ]
+}

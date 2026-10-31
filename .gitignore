@@ -1,0 +1,25 @@
+# Secrets (none in this project; kept out by default)
+.env
+.env.*
+*.key
+*.pem
+
+# Local run data: the dashboard PIN hash, settings, uploads
+data/
+.testdata/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Temporary and preview files
+*.part
+*.tmp
+.p*.png
+frame.png
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store

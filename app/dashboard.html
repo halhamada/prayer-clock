@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ساعة الصلاة</title>
+<style>
+:root{
+  --bg:#f5f2ec;--card:#fffdf9;--ink:#1d1b18;--muted:#6f6a62;--line:#e4ded3;
+  --accent:#a8634a;--accent-ink:#fff;--ok:#3f7a5a;--warn:#b5482f;--chip:#efe8dc;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141311;--card:#1d1b18;--ink:#f1ece4;--muted:#a59e93;--line:#34302a;
+  --accent:#d38a6c;--accent-ink:#1a1310;--ok:#79b894;--warn:#e27a62;--chip:#2a2621;
+  color-scheme:dark;}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Tahoma,"Noto Sans Arabic",sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:24px;margin:4px 0 2px}
+h2{font-size:17px;margin:0 0 12px}
+.sub{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1 1 180px;min-width:0}
+.prayers{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;text-align:center}
+.prayers div{background:var(--chip);border-radius:10px;padding:8px 4px}
+.prayers b{display:block;font-size:16px;direction:ltr}
+.prayers span{font-size:12px;color:var(--muted)}
+@media (max-width:520px){.prayers{grid-template-columns:repeat(3,1fr)}}
+button,.btn{font:inherit;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:10px;padding:7px 14px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.danger{color:var(--warn)}
+button.small{padding:4px 10px;font-size:13px}
+button:disabled{opacity:.5;cursor:default}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 10px;max-width:100%}
+input[type=number]{width:80px}
+label.check{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:14px;user-select:none}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.item .t{font-weight:600}
+.item .m{color:var(--muted);font-size:13px}
+.item.off{opacity:.55}
+.up{list-style:none;margin:0;padding:0}
+.up li{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.up li:last-child{border:0}
+.up .time{direction:ltr;font-variant-numeric:tabular-nums;min-width:52px;color:var(--muted)}
+.tag{font-size:11px;background:var(--chip);border-radius:6px;padding:1px 6px;color:var(--muted)}
+.bar{height:6px;background:var(--chip);border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:10px;font-size:14px}
+.err{color:var(--warn);font-size:14px}
+.hint{font-size:12px;color:var(--muted)}
+.form{display:flex;flex-direction:column;gap:12px;margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:10px}
+.grid label{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.card.warn{border-color:var(--warn)}
+.prayers input{width:100%;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="login" class="card" hidden>
+  <h1>ساعة الصلاة</h1>
+  <p class="sub" id="loginMsg">اكتب الرمز السري للوحة.</p>
+  <div class="row">
+    <input id="pin" type="password" inputmode="numeric" placeholder="الرمز" class="grow">
+    <button class="primary" id="loginBtn">دخول</button>
+  </div>
+  <p class="err" id="loginErr"></p>
+</div>
+
+<div id="app" hidden>
+  <div class="row" style="justify-content:space-between">
+    <div><h1>ساعة الصلاة</h1><div class="sub">مواقيت جعفرية · <span id="city"></span> · <span id="today"></span></div></div>
+    <div class="row"><button id="stopBtn">⏹ إيقاف الصوت</button></div>
+  </div>
+
+  <div class="card warn" id="timeWarn" hidden>
+    <div class="row"><span class="grow">وقت الجهاز غير مؤكد لأنه ما وصل للإنترنت بعد إعادة التشغيل.</span><button class="primary" id="setTime">اضبطه من هذا الجهاز</button></div>
+  </div>
+
+  <div class="card">
+    <h2>مواقيت اليوم</h2>
+    <div class="prayers" id="prayers"></div>
+  </div>
+
+  <div class="card">
+    <h2>القادم</h2>
+    <ul class="up" id="upcoming"></ul>
+  </div>
+
+  <div class="card">
+    <h2>الأذان</h2>
+    <p class="hint">يشتغل في وقت الصلاة ويقطع أي صوت شغّال. زر «إيقاف الصوت» فوق يوقفه.</p>
+    <div class="row">
+      <select id="adhanFile" class="grow"></select>
+      <button class="small" data-test="adhan">▶ تجربة</button>
+    </div>
+    <div class="chips" id="adhanPrayers" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h2>دعاء الأيام</h2>
+    <p class="hint">ملف لكل يوم. استخدمه في الأدعية المجدولة باختيار «دعاء اليوم».</p>
+    <div class="list" id="daily"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">الأدعية المجدولة</h2>
+      <button class="primary" id="addBtn">+ إضافة دعاء</button>
+    </div>
+    <p class="hint">لو فيه صوت شغّال تنتظر لين يخلص (لحد ساعتين).</p>
+    <div id="formHost"></div>
+    <div class="list" id="items"></div>
+  </div>
+
+  <div class="card">
+    <h2>الإعدادات</h2>
+    <div class="grid">
+      <label>الصوت <b id="volLabel"></b><input id="sVolume" type="range" min="0" max="100" step="5"></label>
+      <label>مخرج الصوت<select id="sDevice"></select></label>
+      <label>اتجاه الشاشة<select id="sRotate"><option value="90">طولي (التلفزيون معلق بالطول)</option><option value="270">طولي مقلوب</option><option value="0">عرضي</option><option value="180">عرضي مقلوب</option></select></label>
+      <label>تعديل التاريخ الهجري (أيام)<input id="sHijri" type="number" min="-3" max="3"></label>
+      <label>خط العرض<input id="sLat" type="number" step="0.0001"></label>
+      <label>خط الطول<input id="sLng" type="number" step="0.0001"></label>
+    </div>
+    <p class="hint">تعديل الدقائق يطابق الساعة مع تقويم مسجدك: موجب للتأخير وسالب للتقديم.</p>
+    <div class="prayers" id="offsets"></div>
+    <div class="row" style="margin-top:12px"><button class="primary" id="sSave">حفظ الإعدادات</button><span class="hint" id="hijriNow"></span></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">الملفات</h2>
+      <label class="btn">⬆ رفع ملفات<input type="file" id="uploadInput" accept=".mp3,.wav" multiple hidden></label>
+    </div>
+    <div id="uploads"></div>
+    <ul class="up" id="files" style="margin-top:8px"></ul>
+    <p class="hint">MP3 أو WAV. الأسماء العربية تتحول لاسم إنجليزي تلقائي، والعنوان اللي تكتبه للدعاء هو اللي يظهر على الشاشة.</p>
+  </div>
+</div>
+</div>
+
+<script>
+const PRAYERS=[["fajr","الفجر"],["sunrise","الشروق"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]];
+const DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const DAY_KEYS=["sun","mon","tue","wed","thu","fri","sat"];
+let pin="", S=null, editing=null;
+try{pin=localStorage.getItem("pin")||""}catch(e){}
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+async function api(path,opt={}){
+  opt.headers=Object.assign({"X-Pin":encodeURIComponent(pin)},opt.headers||{});
+  const r=await fetch(path,opt);let j={};try{j=await r.json()}catch(e){}
+  if(r.status===401){showLogin(j.pinSet!==false);throw new Error("auth")}
+  if(!r.ok)throw new Error(j.error||"خطأ");
+  return j;
+}
+function showLogin(pinSet){
+  $("app").hidden=true;$("login").hidden=false;
+  $("loginMsg").textContent=pinSet?"اكتب الرمز السري للوحة.":"أول مرة: اختر رمز سري (4 أرقام أو أكثر) يحمي اللوحة من أي أحد على الشبكة.";
+  $("loginBtn").textContent=pinSet?"دخول":"حفظ الرمز";
+  $("loginBtn").dataset.mode=pinSet?"login":"set";
+}
+$("loginBtn").onclick=async()=>{
+  const v=$("pin").value.trim();$("loginErr").textContent="";
+  if($("loginBtn").dataset.mode==="set"){
+    if(v.length<4){$("loginErr").textContent="الرمز لازم يكون 4 أرقام أو أكثر";return}
+    const r=await fetch("/api/pin",{method:"POST",body:JSON.stringify({pin:v})});
+    if(!r.ok){$("loginErr").textContent="تعذر حفظ الرمز";return}
+  }
+  pin=v;try{localStorage.setItem("pin",v)}catch(e){}
+  load().catch(()=>{$("loginErr").textContent="الرمز غلط (بعد 5 محاولات خاطئة تنقفل اللوحة 5 دقايق)"});
+};
+$("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("loginBtn").click()});
+
+async function load(){
+  const j=await api("/api/state");
+  render(j);
+  $("login").hidden=true;$("app").hidden=false;
+}
+function fmt12(hhmm){const[h,m]=hhmm.split(":").map(Number);return (h%12||12)+":"+String(m).padStart(2,"0")+(h<12?" ص":" م")}
+function fileOptions(sel,extra){
+  let o=extra||"";
+  if(!S.files.length)o+=`<option value="">— ارفع ملف أول —</option>`;
+  else o+=`<option value="">— اختر ملف —</option>`;
+  for(const f of S.files)o+=`<option value="${esc(f.name)}"${f.name===sel?" selected":""}>${esc(f.name)}</option>`;
+  return o;
+}
+function render(j){
+  S={schedule:j.schedule,files:j.files};
+  const sc=S.schedule;sc.adhan=sc.adhan||{file:"",prayers:[]};sc.daily=sc.daily||{};sc.items=sc.items||[];
+  $("today").textContent=DAYS[j.weekday]+" "+j.today;
+  $("prayers").innerHTML=PRAYERS.map(([k,n])=>`<div><span>${n}</span><b>${fmt12(j.prayers[k]).replace(" ","&nbsp;")}</b></div>`).join("");
+  const up=j.upcoming.filter(e=>e.day===1||toMin(e.time)>=nowMin()).slice(0,8);
+  $("upcoming").innerHTML=up.length?up.map(e=>`<li><span class="time">${fmt12(e.time)}</span><span class="grow">${esc(e.title)}</span>${e.day?'<span class="tag">بكرة</span>':""}${e.adhan?'<span class="tag">أذان</span>':""}</li>`).join(""):`<li class="empty">ما فيه شي مجدول. ارفع ملف الأذان أو أضف دعاء.</li>`;
+  $("adhanFile").innerHTML=fileOptions(sc.adhan.file);
+  $("adhanPrayers").innerHTML=PRAYERS.filter(p=>p[0]!=="sunrise").map(([k,n])=>`<span class="chip${sc.adhan.prayers.includes(k)?" on":""}" data-p="${k}">${n}</span>`).join("");
+  $("daily").innerHTML=DAY_KEYS.map((k,i)=>`<div class="row"><span style="min-width:70px">${DAYS[i]}</span><select class="grow" data-day="${k}">${fileOptions(sc.daily[k])}</select><button class="small" data-test="daily:${k}">▶</button></div>`).join("");
+  renderItems();
+  renderSettings(j);
+  $("files").innerHTML=S.files.length?S.files.map(f=>`<li><span class="grow" style="direction:ltr;text-align:right;overflow-wrap:anywhere">${esc(f.name)}</span><span class="hint">${(f.size/1048576).toFixed(1)} م.ب</span><button class="small" data-play="${esc(f.name)}">▶</button><button class="small danger" data-del="${esc(f.name)}">حذف</button></li>`).join(""):`<li class="empty">ما فيه ملفات للحين.</li>`;
+}
+const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m};
+const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
+function describe(it){
+  let when=it.at==="prayer"?(()=>{const n=PRAYERS.find(p=>p[0]===it.prayer)?.[1]||"";const o=+it.offset||0;return o===0?"مع "+n:(o>0?"بعد "+n+" بـ"+o+" دقيقة":"قبل "+n+" بـ"+(-o)+" دقيقة")})():"الساعة "+fmt12(it.time||"00:00");
+  const days=!it.days||!it.days.length?"كل يوم":(it.days.length===1&&it.days[0]===4&&it.at==="prayer"&&["maghrib","isha"].includes(it.prayer)?"ليلة الجمعة":it.days.map(d=>DAYS[d]).join("، "));
+  const file=it.file==="@daily"?"دعاء اليوم":it.file;
+  return `${when} · ${days} · ${esc(file)}${it.interrupt?" · يقطع الصوت":""}`;
+}
+function renderItems(){
+  const items=S.schedule.items;
+  $("items").innerHTML=items.length?items.map((it,i)=>`<div class="item${it.enabled===false?" off":""}"><div class="grow"><div class="t">${esc(it.title||"دعاء")}</div><div class="m">${describe(it)}</div></div>
+    <label class="check"><input type="checkbox" data-en="${i}"${it.enabled===false?"":" checked"}>مفعّل</label>
+    <button class="small" data-edit="${i}">تعديل</button><button class="small danger" data-rm="${i}">حذف</button></div>`).join(""):`<div class="empty">ما فيه أدعية مجدولة. اضغط «إضافة دعاء».</div>`;
+}
+function openForm(i){
+  editing=i;
+  const it=i==null?{id:"i"+Date.now(),title:"",file:"",at:"prayer",prayer:"maghrib",offset:15,time:"08:00",days:[],enabled:true,interrupt:false}:JSON.parse(JSON.stringify(S.schedule.items[i]));
+  const daily=`<option value="@daily"${it.file==="@daily"?" selected":""}>دعاء اليوم (حسب اليوم)</option>`;
+  $("formHost").innerHTML=`<div class="form" id="form">
+    <div class="row"><input id="fTitle" class="grow" placeholder="العنوان، مثل: دعاء كميل" value="${esc(it.title)}"></div>
+    <div class="row"><span>الملف</span><select id="fFile" class="grow">${fileOptions(it.file,daily)}</select></div>
+    <div class="row"><label class="check"><input type="radio" name="fAt" value="prayer"${it.at==="prayer"?" checked":""}>حسب الصلاة</label>
+      <label class="check"><input type="radio" name="fAt" value="clock"${it.at!=="prayer"?" checked":""}>ساعة ثابتة</label></div>
+    <div class="row" id="fPrayerRow"><select id="fWhen"><option value="after">بعد</option><option value="before">قبل</option></select>
+      <select id="fPrayer">${PRAYERS.map(([k,n])=>`<option value="${k}"${k===it.prayer?" selected":""}>${n}</option>`).join("")}</select>
+      <span>بـ</span><input id="fOffset" type="number" min="0" max="600" value="${Math.abs(+it.offset||0)}"><span>دقيقة</span></div>
+    <div class="row" id="fClockRow"><input id="fTime" type="time" value="${esc(it.time||"08:00")}"></div>
+    <div><div class="chips" id="fDays">${DAYS.map((d,k)=>`<span class="chip${it.days.includes(k)?" on":""}" data-d="${k}">${d}</span>`).join("")}</div>
+      <div class="row" style="margin-top:8px"><button class="small" id="fEvery">كل يوم</button><button class="small" id="fFriNight">ليلة الجمعة</button>
+      <span class="hint">بدون اختيار = كل يوم. «ليلة الجمعة» = مساء الخميس بعد المغرب.</span></div></div>
+    <label class="check"><input type="checkbox" id="fInt"${it.interrupt?" checked":""}>يقطع الصوت الشغّال مثل الأذان</label>
+    <div class="row"><button class="primary" id="fSave">حفظ</button><button id="fCancel">إلغاء</button><span class="err" id="fErr"></span></div></div>`;
+  $("fWhen").value=(+it.offset||0)<0?"before":"after";
+  const sync=()=>{const p=document.querySelector('input[name=fAt]:checked').value==="prayer";$("fPrayerRow").hidden=!p;$("fClockRow").hidden=p};
+  document.querySelectorAll('input[name=fAt]').forEach(r=>r.onchange=sync);sync();
+  $("fDays").onclick=e=>{const c=e.target.closest(".chip");if(c)c.classList.toggle("on")};
+  $("fEvery").onclick=()=>document.querySelectorAll("#fDays .chip").forEach(c=>c.classList.remove("on"));
+  $("fFriNight").onclick=()=>{document.querySelectorAll("#fDays .chip").forEach(c=>c.classList.toggle("on",c.dataset.d==="4"));
+    document.querySelector('input[name=fAt][value=prayer]').checked=true;if(!["maghrib","isha"].includes($("fPrayer").value))$("fPrayer").value="maghrib";$("fWhen").value="after";sync()};
+  $("fCancel").onclick=()=>{$("formHost").innerHTML="";editing=null};
+  $("fSave").onclick=async()=>{
+    it.title=$("fTitle").value.trim()||"دعاء";it.file=$("fFile").value;
+    if(!it.file){$("fErr").textContent="اختر ملف";return}
+    it.at=document.querySelector('input[name=fAt]:checked').value;
+    it.prayer=$("fPrayer").value;const o=Math.abs(parseInt($("fOffset").value)||0);it.offset=$("fWhen").value==="before"?-o:o;
+    it.time=$("fTime").value||"08:00";
+    it.days=[...document.querySelectorAll("#fDays .chip.on")].map(c=>+c.dataset.d);
+    it.interrupt=$("fInt").checked;
+    if(editing==null)S.schedule.items.push(it);else S.schedule.items[editing]=it;
+    await save();$("formHost").innerHTML="";editing=null;
+  };
+  $("form").scrollIntoView({behavior:"smooth",block:"center"});
+}
+async function save(){
+  try{const j=await api("/api/schedule",{method:"POST",body:JSON.stringify(S.schedule)});render(j);toast("انحفظ")}
+  catch(e){if(e.message!=="auth")toast("ما انحفظ: "+e.message)}
+}
+document.addEventListener("click",async e=>{
+  const t=e.target;
+  if(t.id==="addBtn")return openForm(null);
+  if(t.id==="stopBtn"){await api("/api/stop",{method:"POST"});return toast("وقف")}
+  if(t.dataset.edit!=null)return openForm(+t.dataset.edit);
+  if(t.dataset.rm!=null){const it=S.schedule.items[+t.dataset.rm];if(t.dataset.sure!=="1"){t.dataset.sure="1";t.textContent="متأكد؟";setTimeout(()=>{t.dataset.sure="";t.textContent="حذف"},3000);return}
+    S.schedule.items.splice(+t.dataset.rm,1);return save()}
+  if(t.dataset.del!=null){if(t.dataset.sure!=="1"){t.dataset.sure="1";t.textContent="متأكد؟";setTimeout(()=>{t.dataset.sure="";t.textContent="حذف"},3000);return}
+    const j=await api("/api/delete?name="+encodeURIComponent(t.dataset.del),{method:"POST"});render(j);return toast("انحذف")}
+  if(t.dataset.play!=null){await api("/api/test?name="+encodeURIComponent(t.dataset.play)+"&title="+encodeURIComponent("تجربة"),{method:"POST"});return toast("يشتغل الآن")}
+  if(t.dataset.test){let f="",title="تجربة";
+    if(t.dataset.test==="adhan"){f=S.schedule.adhan.file;title="أذان"}else{const k=t.dataset.test.split(":")[1];f=S.schedule.daily[k];title="دعاء يوم "+DAYS[DAY_KEYS.indexOf(k)]}
+    if(!f)return toast("اختر ملف أول");
+    await api("/api/test?name="+encodeURIComponent(f)+"&title="+encodeURIComponent(title),{method:"POST"});return toast("يشتغل الآن")}
+  const pc=t.closest("#adhanPrayers .chip");
+  if(pc){const k=pc.dataset.p,a=S.schedule.adhan.prayers;const i=a.indexOf(k);if(i>=0)a.splice(i,1);else a.push(k);return save()}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="adhanFile"){S.schedule.adhan.file=t.value;return save()}
+  if(t.dataset.day){S.schedule.daily[t.dataset.day]=t.value;return save()}
+  if(t.dataset.en!=null){S.schedule.items[+t.dataset.en].enabled=t.checked;return save()}
+});
+$("uploadInput").onchange=async e=>{
+  const files=[...e.target.files];e.target.value="";
+  for(const f of files){
+    const row=document.createElement("div");row.innerHTML=`<div class="hint">${esc(f.name)}</div><div class="bar"><i></i></div>`;$("uploads").appendChild(row);
+    try{await upload(f,p=>row.querySelector("i").style.width=p+"%");row.remove()}
+    catch(err){row.querySelector(".hint").textContent=f.name+" — ما ارتفع: "+err.message}
+  }
+  load();
+};
+function renderSettings(j){
+  const c=j.settings;
+  $("city").textContent=c.city;$("timeWarn").hidden=j.clockSynced;$("hijriNow").textContent=j.hijri;
+  if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".grid,#offsets"))return;
+  $("sVolume").value=c.volume;$("volLabel").textContent=c.volume+"%";
+  $("sDevice").innerHTML=`<option value="">الافتراضي</option>`+j.devices.map(([n,l])=>`<option value="${esc(n)}"${n===c.audio_device?" selected":""}>${esc(l)}</option>`).join("");
+  $("sRotate").value=c.rotate;$("sHijri").value=c.hijri_offset;$("sLat").value=c.latitude;$("sLng").value=c.longitude;
+  const o=c.prayer_offsets||{};
+  $("offsets").innerHTML=PRAYERS.map(([k,n])=>`<div><span>${n}</span><input type="number" min="-60" max="60" data-off="${k}" value="${+o[k]||0}"></div>`).join("");
+}
+$("sVolume").oninput=e=>$("volLabel").textContent=e.target.value+"%";
+$("sSave").onclick=async()=>{
+  const off={};document.querySelectorAll("[data-off]").forEach(i=>off[i.dataset.off]=parseInt(i.value)||0);
+  try{const j=await api("/api/settings",{method:"POST",body:JSON.stringify({volume:+$("sVolume").value,audio_device:$("sDevice").value,rotate:+$("sRotate").value,hijri_offset:parseInt($("sHijri").value)||0,latitude:+$("sLat").value,longitude:+$("sLng").value,prayer_offsets:off})});document.activeElement.blur();render(j);toast("انحفظ")}
+  catch(e){if(e.message!=="auth")toast("ما انحفظ: "+e.message)}
+};
+$("setTime").onclick=async()=>{
+  try{render(await api("/api/time",{method:"POST",body:JSON.stringify({epoch:Math.floor(Date.now()/1000)})}));toast("انضبط الوقت")}
+  catch(e){if(e.message!=="auth")toast("ما انضبط: "+e.message)}
+};
+function upload(f,progress,url){
+  return new Promise((ok,fail)=>{
+    const x=new XMLHttpRequest();x.open("POST",url||"/api/upload?name="+encodeURIComponent(f.name));
+    x.setRequestHeader("X-Pin",encodeURIComponent(pin));
+    x.upload.onprogress=e=>{if(e.lengthComputable)progress(Math.round(e.loaded/e.total*100))};
+    x.onload=()=>{if(x.status===200)ok();else{let m="خطأ";try{m=JSON.parse(x.responseText).error||m}catch(e){}fail(new Error(m))}};
+    x.onerror=()=>fail(new Error("انقطع الاتصال"));x.send(f);
+  });
+}
+load().catch(e=>{if(e.message!=="auth")$("login").hidden=false});
+setInterval(()=>{if(!$("app").hidden&&editing==null&&!document.querySelector("#form"))api("/api/state").then(render).catch(()=>{})},60000);
+</script>
+</body>
+</html>
