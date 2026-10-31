@@ -26,7 +26,8 @@ def devices():
     found = []
     for name in re.findall(r"^default:CARD=\S+", out, re.M):
         card = name.split("=", 1)[1]
-        found.append((name, "HDMI (التلفزيون)" if "hdmi" in card.lower() else card))
+        label = {"vc4hdmi": "HDMI (التلفزيون)", "Headphones": "مخرج السماعات 3.5 ملم"}.get(card, card)
+        found.append((name, label))
     return found
 
 
