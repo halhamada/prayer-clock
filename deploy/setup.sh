@@ -56,6 +56,9 @@ echo "== service"
 cp "$SRC/deploy/prayer-clock.service" /etc/systemd/system/
 # The clock owns the screen; a login prompt on tty1 would flash through it.
 systemctl disable --now getty@tty1.service || true
+# A desktop image would take the screen over from the framebuffer, so boot to text mode.
+systemctl set-default multi-user.target
+systemctl disable display-manager.service 2>/dev/null || true
 systemctl daemon-reload
 systemctl enable prayer-clock.service
 
