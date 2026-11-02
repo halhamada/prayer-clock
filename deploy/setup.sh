@@ -35,6 +35,24 @@ chmod 440 "$SUDOERS.new"
 visudo -cf "$SUDOERS.new"
 mv "$SUDOERS.new" "$SUDOERS"
 
+echo "== network"
+# The dashboard joins Wi-Fi networks and runs the setup hotspot through NetworkManager, which asks polkit.
+apt-get install -y --no-install-recommends polkitd || apt-get install -y --no-install-recommends policykit-1 || true
+mkdir -p /etc/polkit-1/rules.d
+cat > /etc/polkit-1/rules.d/50-prayer-clock.rules <<EOF
+polkit.addRule(function(action, subject) {
+    if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.user == "$SERVICE_USER") {
+        return polkit.Result.YES;
+    }
+});
+EOF
+# Wi-Fi stays blocked until a country is set, which the imager skips when only a cable was configured.
+if command -v raspi-config >/dev/null && [ -z "$(raspi-config nonint get_wifi_country 2>/dev/null)" ]; then
+    raspi-config nonint do_wifi_country SA || true
+fi
+rfkill unblock wifi 2>/dev/null || true
+command -v nmcli >/dev/null || echo "NetworkManager not found: the network screen in the dashboard stays off"
+
 echo "== boot"
 BOOT=/boot/firmware
 [ -d "$BOOT" ] || BOOT=/boot

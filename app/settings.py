@@ -14,6 +14,7 @@ DEFAULTS = {
     "rotate": 90,            # 0 for a landscape TV; 90 or 270 for one hung upright
     "hijri_offset": 0,       # days added to the Umm al-Qura date
     "volume": 100,           # percent of full scale; 100 leaves the audio as recorded
+    "muted": False,          # nothing scheduled plays while set; tests from the dashboard still do
     "audio_device": "",      # an ALSA name, empty for the system default
     "prayer_offsets": {},    # minutes added to a prayer, like {"fajr": 2}
 }

@@ -114,11 +114,13 @@ class Scheduler:
             if e.minute > minute or minute - e.minute > LATE_MIN or e.key in self.fired:
                 continue
             self.fired.add(e.key)
+            if cfg.get("muted"):
+                continue
             if e.interrupt:
                 self._play(e)
             else:
                 self.waiting.append(e)
-        self.waiting = [e for e in self.waiting if minute - e.minute <= MAX_WAIT_MIN]
+        self.waiting = [e for e in self.waiting if minute - e.minute <= MAX_WAIT_MIN and not cfg.get("muted")]
         if self.waiting and not self.player.is_playing():
             self._play(self.waiting.pop(0))   # one at a time; the next waits for a following tick
 

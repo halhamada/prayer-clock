@@ -82,6 +82,7 @@ class Face:
         self.digital = self._font("bold", 36)
         self.count = self._font("bold", 66)
         self.small = self._font("medium", 24)
+        self.note = self._font("medium", 29)
         if self.upright:
             self.hijri_y, self.greg_y = 68 * s, 150 * s
             self.date_x = width / 2
@@ -210,7 +211,43 @@ class Face:
         self.back, self.back_key = back, key
         return back
 
-    def draw(self, target, now, cfg, playing="", warning=""):
+    def _setup(self, target, net):
+        """The steps for joining a new network, over the dial while the setup hotspot is on."""
+        s = self.s
+        card = self.card
+        pygame.draw.rect(target, TILE_BG, card, border_radius=round(12 * s))
+        pygame.draw.rect(target, NAME_YELLOW, card, max(1, round(4 * s)), border_radius=round(12 * s))
+        x = card.centerx
+        hotspot = net["hotspot"]
+        lines = ((50, self.big, "إعداد الشبكة", NAME_YELLOW),
+                 (122, self.note, "١- من الجوال اتصل بشبكة الواي فاي", LABEL_BLUE),
+                 (176, self.big, hotspot["ssid"], TIME_BLUE),
+                 (236, self.tile, "كلمة المرور: " + hotspot["password"], GREEN_TEXT),
+                 (306, self.note, "٢- افتح في المتصفح", LABEL_BLUE),
+                 (360, self.big, hotspot["address"] + ":8080", TIME_BLUE),
+                 (432, self.note, "٣- اختر شبكة المكان واكتب كلمتها", LABEL_BLUE))
+        for y, font, text, color in lines:
+            self._text(target, font, text, color, center=(x, card.top + y * s))
+        if net["mode"] == "connecting":
+            status, color = "جارٍ الاتصال بـ " + net["ssid"], GREEN_TEXT
+        elif net["error"]:
+            status, color = net["error"], WARN
+        else:
+            status, color = "الأذان يعمل في وقته أثناء الإعداد", LABEL_BLUE
+        self._text(target, self.small, status, color, center=(x, card.top + 520 * s))
+
+    def _muted(self, target):
+        """A crossed-out speaker beside the countdown."""
+        s = self.s
+        cx, cy = self.count_box.left - 46 * s, self.count_box.centery
+        body = [(cx - 22 * s, cy - 9 * s), (cx - 12 * s, cy - 9 * s), (cx, cy - 20 * s), (cx, cy + 20 * s),
+                (cx - 12 * s, cy + 9 * s), (cx - 22 * s, cy + 9 * s)]
+        pygame.draw.polygon(target, WARN, [(round(px), round(py)) for px, py in body])
+        w = max(2, round(4 * s))
+        pygame.draw.line(target, WARN, (cx + 8 * s, cy - 10 * s), (cx + 26 * s, cy + 10 * s), w)
+        pygame.draw.line(target, WARN, (cx + 8 * s, cy + 10 * s), (cx + 26 * s, cy - 10 * s), w)
+
+    def draw(self, target, now, cfg, playing="", warning="", net=(None, None)):
         key, left = next_prayer(now, cfg)
         target.blit(self._static(now, cfg, key), (0, 0))
         s = self.s
@@ -228,6 +265,9 @@ class Face:
         radius = round(33 * s)
         pygame.gfxdraw.filled_circle(target, c[0], c[1], radius, CENTER)
         pygame.gfxdraw.aacircle(target, c[0], c[1], radius, CENTER)
+        kind, info = net
+        if kind == "setup":
+            self._setup(target, info)
 
         y = self.label_y
         if playing:
@@ -241,5 +281,11 @@ class Face:
         h, m, sc = left // 3600, left % 3600 // 60, left % 60
         img = self.count.render(f"{h:02d} : {m:02d} : {sc:02d}", True, COUNT_YELLOW)
         target.blit(img, img.get_rect(center=self.count_box.center))
-        if warning:
-            self._text(target, self.small, warning, WARN, center=(self.date_x, self.h - 28 * s))
+        if cfg.get("muted"):
+            self._muted(target)
+        # One line at the bottom; with two things to say they take turns every few seconds.
+        notes = [(text, color) for text, color in ((warning, WARN), (info if kind == "address" else "", GREEN_TEXT))
+                 if text]
+        if notes:
+            text, color = notes[now.second // 6 % len(notes)]
+            self._text(target, self.small, text, color, center=(self.date_x, self.h - 28 * s))

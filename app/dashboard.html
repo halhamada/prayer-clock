@@ -79,7 +79,27 @@ label.check{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
 <div id="app" hidden>
   <div class="row" style="justify-content:space-between">
     <div><h1>ساعة الصلاة</h1><div class="sub">مواقيت جعفرية · <span id="city"></span> · <span id="today"></span></div></div>
-    <div class="row"><button id="stopBtn">⏹ إيقاف الصوت</button></div>
+    <div class="row"><button id="muteBtn">🔇 كتم الصوت</button><button id="stopBtn">⏹ إيقاف</button><button id="netBtn">⚙ الشبكة</button></div>
+  </div>
+
+  <div class="card warn" id="mutedWarn" hidden>
+    <div class="row"><span class="grow">الصوت مكتوم: لا يشتغل الأذان ولا الأدعية حتى تلغي الكتم.</span><button class="primary" id="unmuteBtn">🔊 إلغاء الكتم</button></div>
+  </div>
+
+  <div class="card" id="netCard" hidden>
+    <div class="row" style="justify-content:space-between"><h2 style="margin:0">الشبكة</h2><button class="small" id="netClose">إغلاق</button></div>
+    <p id="netStatus"></p>
+    <div id="netTools">
+      <div class="row"><button id="scanBtn">🔍 الشبكات القريبة</button><span class="hint" id="scanMsg"></span></div>
+      <div class="list" id="wifiList" style="margin-top:10px"></div>
+      <div class="form">
+        <div class="row"><input id="wSsid" class="grow" placeholder="اسم الشبكة" autocomplete="off"></div>
+        <div class="row"><input id="wPass" class="grow" type="password" placeholder="كلمة مرور الواي فاي" autocomplete="off"><button class="primary" id="wJoin">اتصال</button></div>
+        <p class="err" id="wMsg"></p>
+      </div>
+      <p class="hint">بعد الاتصال يظهر العنوان الجديد أسفل شاشة الساعة لمدة 10 دقائق. ارجع بجوالك لنفس الشبكة وافتحه، أو افتح prayerclock.local:8080.
+        إذا ما لقى الجهاز شبكة يعرفها، يشغّل شبكة إعداد باسم PrayerClock وتظهر خطواتها على الشاشة.</p>
+    </div>
   </div>
 
   <div class="card warn" id="timeWarn" hidden>
@@ -209,6 +229,9 @@ function render(j){
   $("daily").innerHTML=DAY_KEYS.map((k,i)=>`<div class="row"><span style="min-width:70px">${DAYS[i]}</span><select class="grow" data-day="${k}">${fileOptions(sc.daily[k])}</select><button class="small" data-test="daily:${k}">▶</button></div>`).join("");
   renderItems();
   renderSettings(j);
+  renderNetwork(j.network);
+  const muted=!!j.settings.muted;$("mutedWarn").hidden=!muted;
+  $("muteBtn").textContent=muted?"🔊 إلغاء الكتم":"🔇 كتم الصوت";$("muteBtn").dataset.muted=muted?"1":"";
   $("files").innerHTML=S.files.length?S.files.map(f=>`<li><span class="grow" style="direction:ltr;text-align:right;overflow-wrap:anywhere">${esc(f.name)}</span><span class="hint">${(f.size/1048576).toFixed(1)} م.ب</span><button class="small" data-play="${esc(f.name)}">▶</button><button class="small danger" data-del="${esc(f.name)}">حذف</button></li>`).join(""):`<li class="empty">ما فيه ملفات للحين.</li>`;
 }
 const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m};
@@ -272,6 +295,13 @@ document.addEventListener("click",async e=>{
   const t=e.target;
   if(t.id==="addBtn")return openForm(null);
   if(t.id==="stopBtn"){await api("/api/stop",{method:"POST"});return toast("وقف")}
+  if(t.id==="muteBtn"||t.id==="unmuteBtn"){const m=t.id==="muteBtn"&&!$("muteBtn").dataset.muted;
+    render(await api("/api/mute",{method:"POST",body:JSON.stringify({muted:m})}));return toast(m?"انكتم الصوت":"رجع الصوت")}
+  if(t.id==="netBtn"){$("netCard").hidden=!$("netCard").hidden;if(!$("netCard").hidden){$("netCard").scrollIntoView({behavior:"smooth"});scan()}return}
+  if(t.id==="netClose"){$("netCard").hidden=true;return}
+  if(t.id==="scanBtn")return scan();
+  if(t.dataset.ssid!=null){$("wSsid").value=t.dataset.ssid;$("wPass").value="";$("wPass").focus();return}
+  if(t.id==="wJoin")return join();
   if(t.dataset.edit!=null)return openForm(+t.dataset.edit);
   if(t.dataset.rm!=null){const it=S.schedule.items[+t.dataset.rm];if(t.dataset.sure!=="1"){t.dataset.sure="1";t.textContent="متأكد؟";setTimeout(()=>{t.dataset.sure="";t.textContent="حذف"},3000);return}
     S.schedule.items.splice(+t.dataset.rm,1);return save()}
@@ -320,6 +350,31 @@ $("setTime").onclick=async()=>{
   try{render(await api("/api/time",{method:"POST",body:JSON.stringify({epoch:Math.floor(Date.now()/1000)})}));toast("انضبط الوقت")}
   catch(e){if(e.message!=="auth")toast("ما انضبط: "+e.message)}
 };
+let netMode="";
+function renderNetwork(n){
+  netMode=n.mode;
+  if(!n.enabled){$("netStatus").textContent="التحكم بالشبكة غير متاح على هذا الجهاز.";$("netTools").hidden=true;return}
+  const addr=n.address?` · العنوان: ${n.address}:8080`:"";
+  $("netStatus").textContent={connected:`متصل بـ ${n.ssid}${addr}`,hotspot:"وضع الإعداد: الجهاز ما لقى شبكة يعرفها. اختر شبكة المكان تحت.",
+    connecting:`جارٍ الاتصال بـ ${n.ssid}…`,offline:"غير متصل بأي شبكة.",starting:"جارٍ فحص الشبكة…"}[n.mode]||"";
+  if(n.error)$("wMsg").textContent=n.error;
+  if(n.mode==="hotspot"&&$("netCard").dataset.auto!=="1"){$("netCard").dataset.auto="1";$("netCard").hidden=false;scan()}
+}
+async function scan(){
+  $("scanMsg").textContent="جارٍ البحث…";
+  try{const j=await api("/api/wifi/scan",{method:"POST"});
+    $("wifiList").innerHTML=j.networks.length?j.networks.map(w=>`<div class="item"><span class="grow t">${esc(w.ssid)}</span><span class="hint">${w.signal}%${w.secure?" 🔒":""}</span><button class="small" data-ssid="${esc(w.ssid)}">اختيار</button></div>`).join(""):`<div class="empty">ما ظهرت شبكات. اكتب اسم الشبكة يدوياً.</div>`;
+    $("scanMsg").textContent="";renderNetwork(j.network)}
+  catch(e){$("scanMsg").textContent=e.message==="auth"?"":"تعذر البحث"}
+}
+async function join(){
+  const ssid=$("wSsid").value.trim(),pass=$("wPass").value;$("wMsg").textContent="";
+  if(!ssid){$("wMsg").textContent="اكتب اسم الشبكة أو اخترها من القائمة";return}
+  try{await api("/api/wifi/join",{method:"POST",body:JSON.stringify({ssid,password:pass})});
+    $("wPass").value="";
+    $("netStatus").textContent=`جارٍ الاتصال بـ ${ssid}… سينقطع جوالك عن الجهاز الآن. ارجع لشبكة ${ssid} وافتح العنوان الذي يظهر أسفل شاشة الساعة.`}
+  catch(e){if(e.message!=="auth")$("wMsg").textContent=e.message}
+}
 function upload(f,progress,url){
   return new Promise((ok,fail)=>{
     const x=new XMLHttpRequest();x.open("POST",url||"/api/upload?name="+encodeURIComponent(f.name));
@@ -331,6 +386,8 @@ function upload(f,progress,url){
 }
 load().catch(e=>{if(e.message!=="auth")$("login").hidden=false});
 setInterval(()=>{if(!$("app").hidden&&editing==null&&!document.querySelector("#form"))api("/api/state").then(render).catch(()=>{})},60000);
+// On the setup hotspot, a quicker poll also tells the device someone is still setting it up.
+setInterval(()=>{if(!$("app").hidden&&(netMode==="hotspot"||netMode==="connecting"))api("/api/state").then(j=>renderNetwork(j.network)).catch(()=>{})},20000);
 </script>
 </body>
 </html>

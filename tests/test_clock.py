@@ -23,6 +23,7 @@ import pygame
 import arabic
 import clockface
 import hijri
+import network
 import output
 import player
 import prayertimes
@@ -151,6 +152,14 @@ class Schedule(unittest.TestCase):
         schedule.Scheduler(p).tick(self._at(self.friday, m + 3), CFG)
         self.assertEqual(p.played, [])
 
+    def test_muted_plays_nothing_and_does_not_catch_up(self):
+        p = FakePlayer()
+        s = schedule.Scheduler(p)
+        m = schedule.prayer_minutes(self.friday, CFG)["dhuhr"]
+        s.tick(self._at(self.friday, m), {**CFG, "muted": True})
+        s.tick(self._at(self.friday, m + 1), CFG)
+        self.assertEqual(p.played, [])
+
     def test_dua_waits_for_the_player_and_gives_up_after_two_hours(self):
         p = FakePlayer()
         p.busy = True
@@ -183,6 +192,16 @@ class Screen(unittest.TestCase):
         for size in ((720, 1280), (1280, 720), (1080, 1920)):
             self.assertGreater(self._frame(size).get_at((size[0] // 2, size[1] // 2)).b, 0)
 
+    def test_setup_steps_mute_and_address_draw(self):
+        net = {"mode": "hotspot", "ssid": "", "error": "كلمة المرور غير صحيحة: Home",
+               "hotspot": {"ssid": "PrayerClock", "password": "12345678", "address": "10.42.0.1"}}
+        for size in ((720, 1280), (1280, 720)):
+            surface = output.logical_surface(size)
+            face = clockface.Face(*size)
+            face.draw(surface, datetime(2026, 1, 30, 12, 52, 5), {**CFG, "muted": True}, net=("setup", net))
+            face.draw(surface, datetime(2026, 1, 30, 12, 52, 5), CFG, "", "تحذير",
+                      ("address", "للتحكم من الجوال: 192.168.8.145:8080"))
+
     def test_framebuffer_formats_and_rotation(self):
         for bpp, stride in ((16, 2560), (32, 5120), (32, 5200)):
             with tempfile.NamedTemporaryFile(delete=False) as f:
@@ -203,6 +222,20 @@ class Player(unittest.TestCase):
         self.assertEqual(player.command("a.mp3", {"volume": 50}), ["mpg123", "-q", "-f", "16384", "a.mp3"])
         cmd = player.command("a.mp3", {"volume": 100, "audio_device": "default:CARD=vc4hdmi"})
         self.assertEqual(cmd[-3:], ["-a", "default:CARD=vc4hdmi", "a.mp3"])
+
+
+class Network(unittest.TestCase):
+    def test_nmcli_escapes(self):
+        self.assertEqual(network.split(r"wlan0:wifi:connected:Cafe\:5G"), ["wlan0", "wifi", "connected", "Cafe:5G"])
+        self.assertEqual(network.split("::"), ["", "", ""])
+
+    def test_errors_for_people(self):
+        self.assertEqual(network.reason("Error: Connection activation failed: Secrets were required, but not "
+                                        "provided."), "كلمة المرور غير صحيحة")
+        self.assertEqual(network.reason("Error: No network with SSID 'x' found."), "الشبكة غير موجودة أو بعيدة")
+
+    def test_screen_while_offline_shows_nothing(self):
+        self.assertEqual(network.Manager().screen(), (None, None))
 
 
 class Dashboard(unittest.TestCase):
@@ -234,6 +267,7 @@ class Dashboard(unittest.TestCase):
                 def stop():
                     pass
 
+        App.network = network.Manager()
         cls.app = App
         cls.http = server.start(App, 0)
         cls.base = f"http://127.0.0.1:{cls.http.server_address[1]}"
@@ -279,6 +313,13 @@ class Dashboard(unittest.TestCase):
         self.assertEqual((cfg["volume"], cfg["rotate"], cfg["prayer_offsets"]), (70, 0, {"fajr": -8}))
         self.assertEqual(self.call("/api/settings", {"rotate": 45})[0], 400)
         settings.save({"rotate": 90, "prayer_offsets": {}})
+
+        code, body = self.call("/api/mute", {"muted": True})
+        self.assertTrue(json.loads(body)["settings"]["muted"])
+        self.call("/api/mute", {"muted": False})
+        self.assertFalse(settings.load()["muted"])
+        self.assertEqual(self.call("/api/wifi/join", {"ssid": "Home", "password": "short"})[0], 400)
+        self.assertEqual(self.call("/api/wifi/join", {"ssid": "Home", "password": "longenough"})[0], 409)   # no nmcli
 
         self.assertEqual(self.call("/api/delete?name=evil.mp3", raw=b"")[0], 200)
         self.assertFalse((settings.AUDIO / "evil.mp3").exists())
