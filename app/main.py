@@ -18,6 +18,7 @@ os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 import pygame
 
 import clockface
+import network
 import output
 import player
 import schedule
@@ -53,6 +54,7 @@ class App:
         self.player = player.Player()
         self.clock = Clock()
         self.auth = server.Auth()
+        self.network = network.Manager()
 
 
 def _uptime():
@@ -74,6 +76,7 @@ def wait_for_framebuffer():
 def run():
     pygame.font.init()
     app = App()
+    app.network.start()
     server.start(app)
     print("dashboard on port", server.PORT, flush=True)
     screen = output.Framebuffer(*wait_for_framebuffer())
@@ -98,17 +101,21 @@ def run():
                 print("schedule error:", repr(e), flush=True)
 
         warning = "" if app.clock.synced() else "الوقت غير مؤكد: وصّل الجهاز بالإنترنت أو اضبطه من اللوحة"
-        face.draw(surface, now, cfg, app.player.title(), warning)
+        face.draw(surface, now, cfg, app.player.title(), warning, app.network.screen())
         screen.show(surface, cfg["rotate"])
         time.sleep(max(0.05, 1.02 - time.time() % 1))
 
 
-def preview(path, at, size):
+def preview(path, at, size, setup=False):
     pygame.font.init()
     w, h = (int(v) for v in size.split("x"))
     surface = output.logical_surface((w, h))
     now = datetime.fromisoformat(at) if at else datetime.now()
-    clockface.Face(w, h).draw(surface, now, settings.load())
+    net = (None, None)
+    if setup:
+        net = ("setup", {"mode": "hotspot", "ssid": "", "error": "", "hotspot": {
+            "ssid": network.HOTSPOT_SSID, "password": "48275936", "address": network.HOTSPOT_ADDRESS}})
+    clockface.Face(w, h).draw(surface, now, settings.load(), net=net)
     pygame.image.save(surface, path)
 
 
@@ -117,9 +124,10 @@ def main():
     parser.add_argument("--preview")
     parser.add_argument("--at")
     parser.add_argument("--size", default="720x1280")
+    parser.add_argument("--setup", action="store_true", help="draw the network setup steps")
     args = parser.parse_args()
     if args.preview:
-        preview(args.preview, args.at, args.size)
+        preview(args.preview, args.at, args.size, args.setup)
     else:
         run()
 

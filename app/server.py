@@ -109,7 +109,8 @@ def state(app):
     return {"schedule": s, "files": files, "prayers": {k: hhmm(v) for k, v in pm.items()}, "upcoming": upcoming,
             "today": str(today), "weekday": schedule.weekday(today), "settings": cfg,
             "devices": player_module.devices(), "playing": app.player.title(),
-            "clockSynced": app.clock.synced(), "hijri": clockface.hijri_line(today, cfg)}
+            "clockSynced": app.clock.synced(), "hijri": clockface.hijri_line(today, cfg),
+            "network": app.network.status()}
 
 
 def make_handler(app):
@@ -142,6 +143,8 @@ def make_handler(app):
             return json.loads(self.rfile.read(length).decode())
 
         def _authorised(self):
+            if self.client_address[0].startswith("10.42."):
+                app.network.touch()   # someone is on the setup hotspot: keep it up
             given = self.headers.get("X-Pin")
             return app.auth.check(unquote(given)) if given else False
 
@@ -202,8 +205,26 @@ def make_handler(app):
             if path == "/api/stop":
                 app.player.stop()
                 return self._json(200, {"ok": True})
+            if path == "/api/mute":
+                muted = bool(self._body()["muted"])
+                settings.save({"muted": muted})
+                if muted:
+                    app.player.stop()
+                return self._json(200, state(app))
             if path == "/api/time":
                 return self._set_time(self._body())
+            if path == "/api/wifi/scan":
+                return self._json(200, {"networks": app.network.scan(), "network": app.network.status()})
+            if path == "/api/wifi/join":
+                body = self._body()
+                ssid, password = str(body["ssid"]).strip(), str(body.get("password") or "")
+                if not ssid or len(ssid) > 32:
+                    return self._error(400, "اسم الشبكة غير صحيح")
+                if password and not 8 <= len(password) <= 63:
+                    return self._error(400, "كلمة مرور الواي فاي من 8 إلى 63 حرف")
+                if not app.network.join(ssid, password):
+                    return self._error(409, "الجهاز مشغول بالاتصال، انتظر قليلاً")
+                return self._json(200, {"ok": True})
             self._error(404, "not found")
 
         def _settings(self, body):
