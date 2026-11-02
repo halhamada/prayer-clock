@@ -20,10 +20,12 @@ import pygame
 import clockface
 import network
 import output
+import photoface
 import player
 import schedule
 import server
 import settings
+import weather
 
 BOOT_GRACE_SECONDS = 180
 
@@ -64,6 +66,11 @@ def _uptime():
         return 1e9
 
 
+def make_face(cfg, width, height):
+    """The face the dashboard picked: the mosque wall clock, or the photo screen of the TVs."""
+    return (photoface.PhotoFace if cfg.get("face") == "photo" else clockface.Face)(width, height)
+
+
 def wait_for_framebuffer():
     while True:
         info = output.probe()
@@ -86,19 +93,22 @@ def run():
     while True:
         now = datetime.now()
         cfg = settings.load()
-        wanted = screen.logical_size(cfg["rotate"])
+        wanted = (screen.logical_size(cfg["rotate"]), cfg.get("face"))
         if wanted != size:
             size = wanted
-            face = clockface.Face(*size)
-            surface = output.logical_surface(size)
+            face = make_face(cfg, *size[0])
+            surface = output.logical_surface(size[0])
 
         minute = now.replace(second=0, microsecond=0)
-        if minute != last_minute and app.clock.usable():
-            last_minute = minute
-            try:
-                scheduler.tick(now, cfg)
-            except Exception as e:   # a bad schedule must not take the clock down with it
-                print("schedule error:", repr(e), flush=True)
+        if minute != last_minute:
+            if cfg.get("face") == "photo":
+                weather.refresh(cfg["latitude"], cfg["longitude"])
+            if app.clock.usable():
+                last_minute = minute
+                try:
+                    scheduler.tick(now, cfg)
+                except Exception as e:   # a bad schedule must not take the clock down with it
+                    print("schedule error:", repr(e), flush=True)
 
         warning = "" if app.clock.synced() else "الوقت غير مؤكد: وصّل الجهاز بالإنترنت أو اضبطه من اللوحة"
         face.draw(surface, now, cfg, app.player.title(), warning, app.network.screen())
@@ -115,7 +125,7 @@ def preview(path, at, size, setup=False):
     if setup:
         net = ("setup", {"mode": "hotspot", "ssid": "", "error": "", "hotspot": {
             "ssid": network.HOTSPOT_SSID, "password": "48275936", "address": network.HOTSPOT_ADDRESS}})
-    clockface.Face(w, h).draw(surface, now, settings.load(), net=net)
+    make_face(settings.load(), w, h).draw(surface, now, settings.load(), net=net)
     pygame.image.save(surface, path)
 
 

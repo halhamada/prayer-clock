@@ -239,6 +239,10 @@ def make_handler(app):
                 if int(body["rotate"]) not in (0, 90, 180, 270):
                     raise ValueError("rotate")
                 changes["rotate"] = int(body["rotate"])
+            if "face" in body:
+                if body["face"] not in ("clock", "photo"):
+                    raise ValueError("face")
+                changes["face"] = body["face"]
             if "hijri_offset" in body:
                 changes["hijri_offset"] = int(_bounded(body["hijri_offset"], -3, 3))
             if "volume" in body:

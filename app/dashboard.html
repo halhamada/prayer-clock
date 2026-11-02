@@ -145,6 +145,7 @@ label.check{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
   <div class="card">
     <h2>الإعدادات</h2>
     <div class="grid">
+      <label>شكل الشاشة<select id="sFace"><option value="clock">ساعة المسجد</option><option value="photo">صور العتبات (مثل شاشة التلفزيون)</option></select></label>
       <label>الصوت <b id="volLabel"></b><input id="sVolume" type="range" min="0" max="100" step="5"></label>
       <label>مخرج الصوت<select id="sDevice"></select></label>
       <label>اتجاه الشاشة<select id="sRotate"><option value="90">طولي (التلفزيون معلق بالطول)</option><option value="270">طولي مقلوب</option><option value="0">عرضي</option><option value="180">عرضي مقلوب</option></select></label>
@@ -336,14 +337,14 @@ function renderSettings(j){
   if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".grid,#offsets"))return;
   $("sVolume").value=c.volume;$("volLabel").textContent=c.volume+"%";
   $("sDevice").innerHTML=`<option value="">الافتراضي</option>`+j.devices.map(([n,l])=>`<option value="${esc(n)}"${n===c.audio_device?" selected":""}>${esc(l)}</option>`).join("");
-  $("sRotate").value=c.rotate;$("sHijri").value=c.hijri_offset;$("sLat").value=c.latitude;$("sLng").value=c.longitude;
+  $("sFace").value=c.face||"clock";$("sRotate").value=c.rotate;$("sHijri").value=c.hijri_offset;$("sLat").value=c.latitude;$("sLng").value=c.longitude;
   const o=c.prayer_offsets||{};
   $("offsets").innerHTML=PRAYERS.map(([k,n])=>`<div><span>${n}</span><input type="number" min="-60" max="60" data-off="${k}" value="${+o[k]||0}"></div>`).join("");
 }
 $("sVolume").oninput=e=>$("volLabel").textContent=e.target.value+"%";
 $("sSave").onclick=async()=>{
   const off={};document.querySelectorAll("[data-off]").forEach(i=>off[i.dataset.off]=parseInt(i.value)||0);
-  try{const j=await api("/api/settings",{method:"POST",body:JSON.stringify({volume:+$("sVolume").value,audio_device:$("sDevice").value,rotate:+$("sRotate").value,hijri_offset:parseInt($("sHijri").value)||0,latitude:+$("sLat").value,longitude:+$("sLng").value,prayer_offsets:off})});document.activeElement.blur();render(j);toast("انحفظ")}
+  try{const j=await api("/api/settings",{method:"POST",body:JSON.stringify({face:$("sFace").value,volume:+$("sVolume").value,audio_device:$("sDevice").value,rotate:+$("sRotate").value,hijri_offset:parseInt($("sHijri").value)||0,latitude:+$("sLat").value,longitude:+$("sLng").value,prayer_offsets:off})});document.activeElement.blur();render(j);toast("انحفظ")}
   catch(e){if(e.message!=="auth")toast("ما انحفظ: "+e.message)}
 };
 $("setTime").onclick=async()=>{

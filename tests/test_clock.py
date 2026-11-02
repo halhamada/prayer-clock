@@ -25,6 +25,7 @@ import clockface
 import hijri
 import network
 import output
+import photoface
 import player
 import prayertimes
 import schedule
@@ -202,6 +203,33 @@ class Screen(unittest.TestCase):
             face.draw(surface, datetime(2026, 1, 30, 12, 52, 5), CFG, "", "تحذير",
                       ("address", "للتحكم من الجوال: 192.168.8.145:8080"))
 
+    def test_photo_face_draws_every_layout(self):
+        net = {"mode": "connecting", "ssid": "Home", "error": "",
+               "hotspot": {"ssid": "PrayerClock", "password": "12345678", "address": "10.42.0.1"}}
+        for size in ((1280, 720), (720, 1280)):
+            surface = output.logical_surface(size)
+            face = photoface.PhotoFace(*size)
+            face.draw(surface, datetime(2026, 10, 22, 20, 43, 5), {**CFG, "muted": True}, "أذان المغرب", "تحذير")
+            self.assertTrue(any(surface.get_at((x, size[1] // 2))[:3] != (0, 0, 0) for x in range(0, size[0], 40)))
+            face.draw(surface, datetime(2026, 10, 22, 20, 44, 5), CFG, net=("setup", net))
+
+    def test_photo_follows_the_day_and_moves_on(self):
+        night = photoface.photo(datetime(2026, 10, 22, 23, 0), CFG)[0]
+        day = photoface.photo(datetime(2026, 10, 22, 10, 0), CFG)[0]
+        self.assertIn("night", night)
+        self.assertIn("day", day)
+        for pool in photoface.SHRINES:
+            for file, credit in pool:
+                self.assertTrue((photoface.PHOTOS / file).is_file(), file)
+                self.assertIn("CC BY", credit)
+
+    def test_arabic_counting(self):
+        self.assertEqual(photoface.until(7 * 60 + 53), "بعد 7 ساعات و53 دقيقة")
+        self.assertEqual(photoface.until(60 + 2), "بعد ساعة ودقيقتين")
+        self.assertEqual(photoface.until(0), "حان الآن")
+        self.assertEqual(photoface.days(109), "109 يوماً")
+        self.assertEqual(photoface.ramadan(date(2026, 10, 22), CFG)[0], "109 يوماً")
+
     def test_framebuffer_formats_and_rotation(self):
         for bpp, stride in ((16, 2560), (32, 5120), (32, 5200)):
             with tempfile.NamedTemporaryFile(delete=False) as f:
@@ -312,6 +340,10 @@ class Dashboard(unittest.TestCase):
         cfg = json.loads(body)["settings"]
         self.assertEqual((cfg["volume"], cfg["rotate"], cfg["prayer_offsets"]), (70, 0, {"fajr": -8}))
         self.assertEqual(self.call("/api/settings", {"rotate": 45})[0], 400)
+        self.assertEqual(self.call("/api/settings", {"face": "tv"})[0], 400)
+        code, body = self.call("/api/settings", {"face": "photo"})
+        self.assertEqual(json.loads(body)["settings"]["face"], "photo")
+        settings.save({"face": "clock"})
         settings.save({"rotate": 90, "prayer_offsets": {}})
 
         code, body = self.call("/api/mute", {"muted": True})
