@@ -19,7 +19,7 @@ for _letter, _count in _LETTERS:
 
 _LAM_ALEF = {"آ": "ﻵ", "أ": "ﻷ", "إ": "ﻹ", "ا": "ﻻ"}   # isolated; final is the next code
 _DIACRITICS = re.compile("[ً-ْٰـ]")
-_LTR = re.compile(r"[0-9A-Za-z][0-9A-Za-z:./\- ]*[0-9A-Za-z]|[0-9A-Za-z]")
+_LTR = re.compile(r"[0-9A-Za-zÀ-ɏ][0-9A-Za-zÀ-ɏ:./\- ]*[0-9A-Za-zÀ-ɏ]|[0-9A-Za-zÀ-ɏ]")   # Latin with accents
 
 
 def _joins_next(ch):

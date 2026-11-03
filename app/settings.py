@@ -12,7 +12,8 @@ DEFAULTS = {
     "latitude": 25.3833,
     "longitude": 49.5858,
     "face": "clock",         # "clock" for the mosque wall clock, "photo" for the TVs' photo screen
-    "rotate": 90,           # 0 for a landscape TV; 90 or 270 for one hung upright
+    "photo_rotate": True,    # photo face: the shrines in turn; False for the dashboard's own photos
+    "rotate": 90,            # 0 for a landscape TV; 90 or 270 for one hung upright
     "hijri_offset": 0,       # days added to the Umm al-Qura date
     "volume": 100,           # percent of full scale; 100 leaves the audio as recorded
     "muted": False,          # nothing scheduled plays while set; tests from the dashboard still do
