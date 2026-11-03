@@ -113,7 +113,10 @@ def run():
         warning = "" if app.clock.synced() else "الوقت غير مؤكد: وصّل الجهاز بالإنترنت أو اضبطه من اللوحة"
         face.draw(surface, now, cfg, app.player.title(), warning, app.network.screen())
         screen.show(surface, cfg["rotate"])
-        time.sleep(max(0.05, 1.02 - time.time() % 1))
+        if getattr(face, "animating", False):
+            time.sleep(0.08)   # a photo crossfade: about ten frames a second for its three seconds
+        else:
+            time.sleep(max(0.05, 1.02 - time.time() % 1))
 
 
 def preview(path, at, size, setup=False):

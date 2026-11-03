@@ -6,6 +6,7 @@ in landscape, and stacked for a screen hung upright.
 Sizes are in the launcher's dp, so both look alike: a 720 px tall TV is 540 dp, as is the TCL's 1080 px."""
 
 import random
+import time
 from datetime import timedelta
 
 import pygame
@@ -25,6 +26,7 @@ MONTHS = ("يناير", "فبراير", "مارس", "أبريل", "مايو", "�
 ROW = ("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
 ROW_NAMES = ("الفجر", "الشروق", "الظهر", "العصر", "المغرب", "العشاء")
 RAMADAN = 9
+FADE_SECONDS = 3   # the TV's crossfade when the photo changes
 
 
 def clock12(minute):
@@ -119,6 +121,8 @@ class PhotoFace(clockface.Panels):
         self.ramadan = None
         self.ramadan_for = None
         self.drawn = None
+        self.fade_from = None
+        self.fade_start = 0
         self.photo_for = self.photo = self.weather = None
         self.dx = self.dy = 0
 
@@ -150,8 +154,15 @@ class PhotoFace(clockface.Panels):
                 a = round(alpha * (1 - y / band))
                 pygame.draw.line(shade, (0, 0, 0, a), (0, y if top else band - 1 - y), (w, y if top else band - 1 - y))
             back.blit(shade, (0, 0 if top else h - band))
+        if self.background is not None:   # crossfade from the photo before, as the TV does; not on the first
+            self.fade_from, self.fade_start = self.background, time.monotonic()
         self.background, self.background_for = back, file
         return back
+
+    @property
+    def animating(self):
+        """True while a crossfade runs, so the main loop draws faster than once a second."""
+        return self.fade_from is not None
 
     def _render(self, text, name, sp, alpha=1.0, shaped=False):
         """White text with the launcher's soft shadow, as one surface."""
@@ -195,7 +206,13 @@ class PhotoFace(clockface.Panels):
                 stamp = 0
             self.photo_for, self.photo, self.weather = minute, ((path, stamp), credit), weather.reading()
         (file, credit), w8 = self.photo, self.weather
-        key = (minute, playing, note, kind, repr(info) if kind == "setup" else "",
+        back = self._background(file)
+        fade = 1.0
+        if self.fade_from is not None:
+            fade = min(1.0, (time.monotonic() - self.fade_start) / FADE_SECONDS)
+            if fade >= 1:
+                self.fade_from = None
+        key = (minute, round(fade, 2), playing, note, kind, repr(info) if kind == "setup" else "",
                file, bool(cfg.get("muted")), repr(w8), cfg.get("city"), cfg.get("hijri_offset"),
                cfg.get("latitude"), cfg.get("longitude"), repr(cfg.get("prayer_offsets")))
         if key == self.drawn:
@@ -205,7 +222,13 @@ class PhotoFace(clockface.Panels):
         rnd = random.Random(int(now.timestamp()) // 300)
         self.dx, self.dy = ((rnd.random() * 2 - 1) * 10 * self.u for _ in range(2))
 
-        target.blit(self._background(file), (0, 0))
+        if self.fade_from is not None:   # the new photo over the old one, more each frame
+            target.blit(self.fade_from, (0, 0))
+            back.set_alpha(round(255 * fade))
+            target.blit(back, (0, 0))
+            back.set_alpha(None)
+        else:
+            target.blit(back, (0, 0))
         u = self.u
         W, H = self.w / u, self.h / u
         side = 36 if self.upright else 52
