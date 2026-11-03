@@ -224,6 +224,24 @@ class Screen(unittest.TestCase):
                 self.assertTrue((backgrounds.PHOTOS / file).is_file(), file)
                 self.assertIn("CC BY", credit)
 
+    def test_photo_change_crossfades(self):
+        surface = output.logical_surface((1280, 720))
+        face = photoface.PhotoFace(1280, 720)
+        face.draw(surface, datetime(2026, 10, 22, 23, 0), CFG)
+        self.assertFalse(face.animating)   # the first photo just appears
+        night = surface.get_at((640, 360))
+        face.draw(surface, datetime(2026, 10, 22, 10, 0), CFG)
+        self.assertTrue(face.animating)
+        face.fade_start -= photoface.FADE_SECONDS / 2
+        face.draw(surface, datetime(2026, 10, 22, 10, 0, 1), CFG)
+        middle = surface.get_at((640, 360))
+        face.fade_start -= photoface.FADE_SECONDS
+        face.draw(surface, datetime(2026, 10, 22, 10, 0, 2), CFG)
+        self.assertFalse(face.animating)
+        day = surface.get_at((640, 360))
+        for c in range(3):
+            self.assertTrue(min(night[c], day[c]) - 2 <= middle[c] <= max(night[c], day[c]) + 2)
+
     def test_own_photos_by_slot_then_all_then_default(self):
         manual = {**CFG, "photo_rotate": False}
         night = datetime(2026, 10, 22, 23, 0)
