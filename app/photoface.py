@@ -1,24 +1,22 @@
-"""The photo face, the clock screen of the MITV launcher on the TCL and Mi Box: a photo of the shrines that follows
-the time of day and moves on at every adhan, the day with its Gregorian and Hijri dates, a large time, the weather,
+"""The photo face, the clock screen of the MITV launcher on the TCL and Mi Box: a photo that follows the time of day
+(the shrines moving on at every adhan, or the dashboard's own, see backgrounds.py), the day with its Gregorian and Hijri dates, a large time, the weather,
 the next prayer with the time left to it over the day's six times, and the days to Ramadan. Laid out like the TV
 in landscape, and stacked for a screen hung upright.
 
 Sizes are in the launcher's dp, so both look alike: a 720 px tall TV is 540 dp, as is the TCL's 1080 px."""
 
 import random
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import timedelta
 
 import pygame
 
 import arabic
+import backgrounds
 import clockface
 import hijri
-import prayertimes
 import schedule
 import weather
 
-PHOTOS = Path(__file__).resolve().parent.parent / "assets" / "photos"
 WHITE = (255, 255, 255)
 
 DAYS = ("الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت")
@@ -27,44 +25,6 @@ MONTHS = ("يناير", "فبراير", "مارس", "أبريل", "مايو", "�
 ROW = ("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
 ROW_NAMES = ("الفجر", "الشروق", "الظهر", "العصر", "المغرب", "العشاء")
 RAMADAN = 9
-
-# The rotation by time of day (dawn, day, sunset, night), as in the launcher's Backgrounds.java.
-SHRINES = (
-    (("shrine_dawn_1.jpg", "العتبة العباسية المقدسة، كربلاء. تصوير Taisir Mahdi (CC BY-SA 4.0)"),
-     ("shrine_dawn_2.jpg", "حرم السيدة فاطمة المعصومة، قم. تصوير Amir Pashaei (CC BY-SA 4.0)")),
-    (("shrine_day_1.jpg", "حرم الإمام علي، النجف. تصوير Goudarz.memar (CC BY-SA 4.0)"),
-     ("shrine_day_2.jpg", "حرم الإمام الرضا، مشهد. khamenei.ir (CC BY 4.0)"),
-     ("shrine_day_3.jpg", "حرم السيدة فاطمة المعصومة، قم. تصوير Diego Delso (CC BY-SA 4.0)")),
-    (("shrine_sunset_1.jpg", "العتبة العباسية المقدسة، كربلاء. تصوير Taisir Mahdi (CC BY-SA 4.0)"),
-     ("shrine_sunset_2.jpg", "حرم الإمام الرضا، مشهد. تصوير Mahdiyar2019 (CC BY-SA 4.0)")),
-    (("shrine_night_1.jpg", "حرم الإمام الحسين، كربلاء. تصوير Samerhusseini87 (CC BY-SA 4.0)"),
-     ("shrine_night_2.jpg", "حرم الإمام الرضا، مشهد. تصوير mohammad hosein tabatabaeian (CC BY-SA 3.0)"),
-     ("shrine_night_3.jpg", "حرم الإمام الرضا، مشهد. تصوير Lstfllw203 (CC BY-SA 4.0)")))
-
-
-def slot(hours, t):
-    """Dawn from Fajr to 45 minutes after sunrise, day until an hour before sunset, sunset until Isha, then night."""
-    if t[prayertimes.FAJR] <= hours < t[prayertimes.SUNRISE] + 0.75:
-        return 0
-    if t[prayertimes.SUNRISE] + 0.75 <= hours < t[prayertimes.SUNSET] - 1:
-        return 1
-    if t[prayertimes.SUNSET] - 1 <= hours < t[prayertimes.ISHA]:
-        return 2
-    return 3
-
-
-def photo(now, cfg):
-    """(file, credit) for now: the day number plus the adhans already called today picks from the slot's photos,
-    so the photo moves on at every adhan, and the TV shows the same one at the same moment."""
-    today = now.date()
-    t = prayertimes.compute(today, cfg["latitude"], cfg["longitude"], schedule.zone_hours(today))
-    pool = SHRINES[slot(now.hour + now.minute / 60 + now.second / 3600, t)]
-    minutes = schedule.prayer_minutes(today, cfg)
-    minute = now.hour * 60 + now.minute
-    prayers = (schedule.load().get("adhan") or {}).get("prayers") or []
-    passed = sum(1 for k in prayers if k in minutes and minutes[k] <= minute)
-    step = (today - datetime(1970, 1, 1).date()).days % 100000 + passed
-    return pool[step % len(pool)]
 
 
 def clock12(minute):
@@ -177,12 +137,12 @@ class PhotoFace(clockface.Panels):
         back = pygame.Surface((w, h), 0, 32, clockface.MASKS)
         back.fill((0, 0, 0))
         try:
-            img = pygame.image.load(str(PHOTOS / file))
+            img = pygame.image.load(str(file[0]))
             k = max(w / img.get_width(), h / img.get_height())
             img = pygame.transform.smoothscale(img, (round(img.get_width() * k), round(img.get_height() * k)))
             back.blit(img, ((w - img.get_width()) // 2, (h - img.get_height()) // 2))
         except (pygame.error, OSError) as e:
-            print("photo:", file, e, flush=True)
+            print("photo:", file[0], e, flush=True)
         for top, size, alpha in ((True, 200, 0x73), (False, 300 if not self.upright else 420, 0x8C)):
             band = round(size * u)
             shade = pygame.Surface((w, band), pygame.SRCALPHA, 32)
@@ -228,7 +188,12 @@ class PhotoFace(clockface.Panels):
         note = notes[now.second // 6 % len(notes)] if notes else ""
         minute = now.replace(second=0, microsecond=0)
         if self.photo_for != minute:   # reads the schedule and the weather file, so once a minute
-            self.photo_for, self.photo, self.weather = minute, photo(now, cfg), weather.reading()
+            path, credit = backgrounds.pick(now, cfg)
+            try:
+                stamp = path.stat().st_mtime_ns   # a new upload to the same slot changes the photo
+            except OSError:
+                stamp = 0
+            self.photo_for, self.photo, self.weather = minute, ((path, stamp), credit), weather.reading()
         (file, credit), w8 = self.photo, self.weather
         key = (minute, playing, note, kind, repr(info) if kind == "setup" else "",
                file, bool(cfg.get("muted")), repr(w8), cfg.get("city"), cfg.get("hijri_offset"),
@@ -340,8 +305,9 @@ class PhotoFace(clockface.Panels):
             self._put(target, sub, "regular", 13, x, r.bottom, alpha=0.9)
 
         # The photo's credit, bottom left (the photos are CC BY and BY-SA).
-        ch_credit = self._size(credit, "regular", 9)[1]
-        self._put(target, credit, "regular", 9, px(side), px(H - 30) - ch_credit, align="left", alpha=0.65)
+        if credit:   # none for the dashboard's own photos
+            ch_credit = self._size(credit, "regular", 9)[1]
+            self._put(target, credit, "regular", 9, px(side), px(H - 30) - ch_credit, align="left", alpha=0.65)
 
         if kind == "setup":
             self._setup(target, info)

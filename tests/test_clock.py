@@ -21,6 +21,7 @@ os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 import pygame
 
 import arabic
+import backgrounds
 import clockface
 import hijri
 import network
@@ -214,14 +215,29 @@ class Screen(unittest.TestCase):
             face.draw(surface, datetime(2026, 10, 22, 20, 44, 5), CFG, net=("setup", net))
 
     def test_photo_follows_the_day_and_moves_on(self):
-        night = photoface.photo(datetime(2026, 10, 22, 23, 0), CFG)[0]
-        day = photoface.photo(datetime(2026, 10, 22, 10, 0), CFG)[0]
-        self.assertIn("night", night)
-        self.assertIn("day", day)
-        for pool in photoface.SHRINES:
+        night = backgrounds.pick(datetime(2026, 10, 22, 23, 0), CFG)[0]
+        day = backgrounds.pick(datetime(2026, 10, 22, 10, 0), CFG)[0]
+        self.assertIn("shrine_night", night.name)
+        self.assertIn("shrine_day", day.name)
+        for pool in backgrounds.SHRINES + tuple((d,) for d in backgrounds.DEFAULTS):
             for file, credit in pool:
-                self.assertTrue((photoface.PHOTOS / file).is_file(), file)
+                self.assertTrue((backgrounds.PHOTOS / file).is_file(), file)
                 self.assertIn("CC BY", credit)
+
+    def test_own_photos_by_slot_then_all_then_default(self):
+        manual = {**CFG, "photo_rotate": False}
+        night = datetime(2026, 10, 22, 23, 0)
+        self.assertEqual(backgrounds.pick(night, manual)[0].name, "saver_night.jpg")
+        backgrounds.folder().mkdir(parents=True, exist_ok=True)
+        (backgrounds.folder() / "all.jpg").write_bytes(b"x")
+        self.assertEqual(backgrounds.pick(night, manual), (backgrounds.folder() / "all.jpg", ""))
+        (backgrounds.folder() / "night.jpg").write_bytes(b"x")
+        self.assertEqual(backgrounds.pick(night, manual)[0].name, "night.jpg")
+        self.assertEqual(backgrounds.shown("dawn").name, "all.jpg")
+        for slot in ("all", "night"):
+            backgrounds.delete(slot)
+        self.assertEqual(backgrounds.shown("dawn").name, "saver_dawn.jpg")
+        self.assertIsNone(backgrounds.shown("all"))
 
     def test_arabic_counting(self):
         self.assertEqual(photoface.until(7 * 60 + 53), "بعد 7 ساعات و53 دقيقة")
@@ -352,6 +368,30 @@ class Dashboard(unittest.TestCase):
         self.assertFalse(settings.load()["muted"])
         self.assertEqual(self.call("/api/wifi/join", {"ssid": "Home", "password": "short"})[0], 400)
         self.assertEqual(self.call("/api/wifi/join", {"ssid": "Home", "password": "longenough"})[0], 409)   # no nmcli
+
+        # A phone photo, 40 wide and 20 tall, stored on its side with EXIF orientation 6.
+        pygame.font.init()
+        img = pygame.Surface((40, 20))
+        img.fill((200, 50, 50))
+        with tempfile.TemporaryDirectory() as d:
+            pygame.image.save(img, os.path.join(d, "p.jpg"))
+            jpeg = Path(d, "p.jpg").read_bytes()
+        tiff = b"MM\0\x2a\0\0\0\x08" + b"\0\x01" + b"\x01\x12\0\x03\0\0\0\x01\0\x06\0\0" + b"\0\0\0\0"
+        app1 = b"Exif\0\0" + tiff
+        photo = jpeg[:2] + b"\xff\xe1" + (len(app1) + 2).to_bytes(2, "big") + app1 + jpeg[2:]
+        self.assertEqual(self.call("/api/bg/upload?slot=sky", raw=photo)[0], 400)
+        self.assertEqual(self.call("/api/bg/upload?slot=day", raw=b"not an image")[0], 400)
+        code, body = self.call("/api/bg/upload?slot=day", raw=photo)
+        self.assertEqual(code, 200)
+        self.assertEqual(json.loads(body)["backgrounds"], {"rotate": False, "all": False, "dawn": False,
+                                                           "day": True, "sunset": False, "night": False})
+        self.assertEqual(pygame.image.load(str(backgrounds.own("day"))).get_size(), (20, 40))   # turned upright
+        self.assertEqual(self.call("/api/bg/get?slot=day", pin="0000")[0], 401)
+        self.assertEqual(self.call("/api/bg/get?slot=all")[0], 404)
+        self.assertEqual(self.call("/api/bg/get?slot=night")[1][:2], b"\xff\xd8")
+        self.assertEqual(self.call("/api/bg/delete?slot=day", raw=b"")[0], 200)
+        self.assertIsNone(backgrounds.own("day"))
+        settings.save({"photo_rotate": True})
 
         self.assertEqual(self.call("/api/delete?name=evil.mp3", raw=b"")[0], 200)
         self.assertFalse((settings.AUDIO / "evil.mp3").exists())

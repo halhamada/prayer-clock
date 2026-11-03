@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qsl, unquote, urlsplit
 
+import backgrounds
 import clockface
 import player as player_module
 import schedule
@@ -22,6 +23,7 @@ import settings
 
 PORT = 8080
 MAX_UPLOAD = 200 * 1024 * 1024
+MAX_IMAGE = 30 * 1024 * 1024
 MAX_JSON = 2 * 1024 * 1024
 AUDIO_TYPES = (".mp3", ".wav")   # what mpg123 decodes
 PAGE = Path(__file__).with_name("dashboard.html")
@@ -110,7 +112,7 @@ def state(app):
             "today": str(today), "weekday": schedule.weekday(today), "settings": cfg,
             "devices": player_module.devices(), "playing": app.player.title(),
             "clockSynced": app.clock.synced(), "hijri": clockface.hijri_line(today, cfg),
-            "network": app.network.status()}
+            "network": app.network.status(), "backgrounds": backgrounds.status(cfg)}
 
 
 def make_handler(app):
@@ -158,6 +160,14 @@ def make_handler(app):
                     self._json(200, {**state(app), "pinSet": pin_set})
                 else:
                     self._json(401, {"pinSet": pin_set})
+            elif url.path == "/api/bg/get":
+                if not self._authorised():
+                    return self._error(401, "الرمز غلط")
+                slot = dict(parse_qsl(url.query)).get("slot", "")
+                path = backgrounds.shown(slot) if backgrounds.is_slot(slot) else None
+                if not path:
+                    return self._error(404, "ما فيه صورة")
+                self._send(200, path.read_bytes(), "image/jpeg")
             else:
                 self._error(404, "not found")
 
@@ -205,6 +215,13 @@ def make_handler(app):
             if path == "/api/stop":
                 app.player.stop()
                 return self._json(200, {"ok": True})
+            if path == "/api/bg/upload":
+                return self._bg_upload(query.get("slot", ""))
+            if path == "/api/bg/delete":
+                if not backgrounds.is_slot(query.get("slot", "")):
+                    return self._error(400, "خانة غير معروفة")
+                backgrounds.delete(query["slot"])
+                return self._json(200, state(app))
             if path == "/api/mute":
                 muted = bool(self._body()["muted"])
                 settings.save({"muted": muted})
@@ -243,6 +260,8 @@ def make_handler(app):
                 if body["face"] not in ("clock", "photo"):
                     raise ValueError("face")
                 changes["face"] = body["face"]
+            if "photo_rotate" in body:
+                changes["photo_rotate"] = bool(body["photo_rotate"])
             if "hijri_offset" in body:
                 changes["hijri_offset"] = int(_bounded(body["hijri_offset"], -3, 3))
             if "volume" in body:
@@ -255,15 +274,8 @@ def make_handler(app):
             settings.save(changes)
             return state(app)
 
-        def _upload(self, requested):
-            length = self._length()
-            if length <= 0 or length > MAX_UPLOAD:
-                return self._error(400, "الملف فاضي أو أكبر من 200 ميجا")
-            name = safe_name(requested)
-            if not name:
-                return self._error(400, "الجهاز يشغّل MP3 و WAV فقط، حوّل الملف إلى MP3")
-            settings.AUDIO.mkdir(parents=True, exist_ok=True)
-            part = settings.AUDIO / (name + ".part")
+        def _receive(self, part, length):
+            """Writes exactly length bytes of the body to part; False (and no file) if it was cut short."""
             left = length
             with open(part, "wb") as f:
                 while left > 0:
@@ -274,6 +286,38 @@ def make_handler(app):
                     left -= len(chunk)
             if left > 0:
                 part.unlink()
+                return False
+            return True
+
+        def _bg_upload(self, slot):
+            if not backgrounds.is_slot(slot):
+                return self._error(400, "خانة غير معروفة")
+            length = self._length()
+            if length <= 0 or length > MAX_IMAGE:
+                return self._error(400, "الصورة فاضية أو أكبر من 30 ميجا")
+            backgrounds.folder().mkdir(parents=True, exist_ok=True)
+            part = backgrounds.folder() / f"{slot}.part"
+            if not self._receive(part, length):
+                return self._error(400, "انقطع الرفع")
+            try:
+                ok = backgrounds.save(slot, part)
+            finally:
+                part.unlink(missing_ok=True)
+            if not ok:
+                return self._error(400, "الملف مو صورة (JPG أو PNG)")
+            settings.save({"photo_rotate": False})   # an upload is a manual choice: show it
+            return self._json(200, state(app))
+
+        def _upload(self, requested):
+            length = self._length()
+            if length <= 0 or length > MAX_UPLOAD:
+                return self._error(400, "الملف فاضي أو أكبر من 200 ميجا")
+            name = safe_name(requested)
+            if not name:
+                return self._error(400, "الجهاز يشغّل MP3 و WAV فقط، حوّل الملف إلى MP3")
+            settings.AUDIO.mkdir(parents=True, exist_ok=True)
+            part = settings.AUDIO / (name + ".part")
+            if not self._receive(part, length):
                 return self._error(400, "انقطع الرفع")
             os.replace(part, settings.AUDIO / name)
             return self._json(200, {"name": name})
