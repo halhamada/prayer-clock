@@ -7,7 +7,6 @@ enum Palette {
     static func rgb(_ r: Double, _ g: Double, _ b: Double) -> Color { Color(red: r / 255, green: g / 255, blue: b / 255) }
     static let navyTop = rgb(10, 20, 72), navyBottom = rgb(3, 8, 40)
     static let bokeh = rgb(60, 110, 200)
-    static let frame = rgb(28, 96, 70)
     static let greenText = rgb(196, 245, 190)
     static let card = rgb(178, 235, 232), cardEdge = rgb(232, 138, 122)
     static let ink = rgb(20, 20, 22)
@@ -36,7 +35,7 @@ struct ClockState {
     var today: DayTimes { DayTimes(day: now, location: location) }
 }
 
-/// Night-blue gradient with out-of-focus lights and a thin green frame.
+/// Night-blue gradient with out-of-focus lights.
 struct Backdrop: View {
     var body: some View {
         GeometryReader { g in
@@ -49,9 +48,6 @@ struct Backdrop: View {
                         .frame(width: g.size.width * l.2 * 2, height: g.size.width * l.2 * 2)
                         .position(x: g.size.width * l.0, y: g.size.height * l.1)
                 }
-                RoundedRectangle(cornerRadius: 4)
-                    .strokeBorder(Palette.frame, lineWidth: 1.5)
-                    .padding(5)
             }
         }
     }
