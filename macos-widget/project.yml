@@ -1,0 +1,64 @@
+name: PrayerClockWidget
+options:
+  bundleIdPrefix: com.halhamada.prayerclock
+  deploymentTarget:
+    macOS: "14.0"
+settings:
+  base:
+    # Signed to run locally on this Mac only; no Apple developer account needed.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+targets:
+  PrayerClock:
+    type: application
+    platform: macOS
+    sources:
+      - App
+      - Shared
+      - path: ../assets/fonts
+        includes: ["plex_arabic_*.ttf"]
+        buildPhase: resources
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: ساعة الصلاة
+        ATSApplicationFontsPath: .
+        LSApplicationCategoryType: public.app-category.lifestyle
+    entitlements:
+      path: App/PrayerClock.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.halhamada.prayerclock
+        ENABLE_HARDENED_RUNTIME: YES
+    dependencies:
+      - target: PrayerWidgetExtension
+  PrayerWidgetExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - Widget
+      - Shared
+      - path: ../assets/fonts
+        includes: ["plex_arabic_*.ttf"]
+        buildPhase: resources
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: ساعة الصلاة
+        ATSApplicationFontsPath: .
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widget/PrayerWidget.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.halhamada.prayerclock.widget
+        ENABLE_HARDENED_RUNTIME: YES

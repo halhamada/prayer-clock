@@ -1,0 +1,491 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		15DB972DB44D52A9A165221B /* plex_arabic_medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C27B8F8C150A7CB704728155 /* plex_arabic_medium.ttf */; };
+		195E3FBFF16EA5BE9D556DF0 /* PrayerTimes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E080ABDA4050F808008A5C8F /* PrayerTimes.swift */; };
+		3B038EC40425953BB72D05D2 /* plex_arabic_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0216648B9CB1933F090C9E42 /* plex_arabic_regular.ttf */; };
+		463AF777DDF138D86DFCED81 /* plex_arabic_bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F74DA95B87E18AD4AC0B52E0 /* plex_arabic_bold.ttf */; };
+		78EB6DCEE04278E276986781 /* plex_arabic_medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C27B8F8C150A7CB704728155 /* plex_arabic_medium.ttf */; };
+		7E17E3D542A1CCB9E90C5858 /* ClockFace.swift in Sources */ = {isa = PBXBuildFile; fileRef = A432964E52FD7F1211131103 /* ClockFace.swift */; };
+		ABCE82AF245F5093EE470EB5 /* PrayerTimes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E080ABDA4050F808008A5C8F /* PrayerTimes.swift */; };
+		B7CD14A19C3419B930A5D95B /* ClockFace.swift in Sources */ = {isa = PBXBuildFile; fileRef = A432964E52FD7F1211131103 /* ClockFace.swift */; };
+		C93286C213ED404AD9E8C6D9 /* plex_arabic_bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F74DA95B87E18AD4AC0B52E0 /* plex_arabic_bold.ttf */; };
+		D58F498363CC3C0D89774832 /* plex_arabic_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0216648B9CB1933F090C9E42 /* plex_arabic_regular.ttf */; };
+		D68940DBE649E3E290EDD2BB /* PrayerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 344B9432212F14FB16FB3485 /* PrayerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0B5548F4E28D082FCC1EE81 /* PrayerClockApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D027EE01927B57214C3C5A /* PrayerClockApp.swift */; };
+		F7CA0C20B6AF1AD51CC84371 /* PrayerWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8153AC9962E872F6B9193FB4 /* PrayerWidget.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8B34B96624CBCC4E75DDEA1F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9466A2CBE7DE02695D582159 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3BB8FB1E4B7BEBEBA454D058;
+			remoteInfo = PrayerWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		6C590C531C073BEA167C3A68 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D68940DBE649E3E290EDD2BB /* PrayerWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0216648B9CB1933F090C9E42 /* plex_arabic_regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = plex_arabic_regular.ttf; sourceTree = "<group>"; };
+		344B9432212F14FB16FB3485 /* PrayerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PrayerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F99CED5C9D5D950A6D5BF9F /* PrayerClock.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PrayerClock.entitlements; sourceTree = "<group>"; };
+		5CD5CE67450A062F03EA74C7 /* PrayerClock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PrayerClock.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8153AC9962E872F6B9193FB4 /* PrayerWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerWidget.swift; sourceTree = "<group>"; };
+		904998DB8A7316601A67EEC1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A432964E52FD7F1211131103 /* ClockFace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockFace.swift; sourceTree = "<group>"; };
+		B0D027EE01927B57214C3C5A /* PrayerClockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerClockApp.swift; sourceTree = "<group>"; };
+		C27B8F8C150A7CB704728155 /* plex_arabic_medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = plex_arabic_medium.ttf; sourceTree = "<group>"; };
+		D7EBF27F2072F0DF4A24AF35 /* PrayerWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PrayerWidget.entitlements; sourceTree = "<group>"; };
+		E080ABDA4050F808008A5C8F /* PrayerTimes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerTimes.swift; sourceTree = "<group>"; };
+		EC1FF260B4A4C1D474AE9B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F74DA95B87E18AD4AC0B52E0 /* plex_arabic_bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = plex_arabic_bold.ttf; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0C432E653462E2A1449D37DD = {
+			isa = PBXGroup;
+			children = (
+				948C599EF7A1916B469C35BC /* App */,
+				D4392ED46E4755A247321E21 /* fonts */,
+				3A2BF052308E461E694B9C53 /* Shared */,
+				8ACFDE21668F111A9C86A7B7 /* Widget */,
+				5D8FCEF68CBCB3B00392FB94 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3A2BF052308E461E694B9C53 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A432964E52FD7F1211131103 /* ClockFace.swift */,
+				E080ABDA4050F808008A5C8F /* PrayerTimes.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		5D8FCEF68CBCB3B00392FB94 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5CD5CE67450A062F03EA74C7 /* PrayerClock.app */,
+				344B9432212F14FB16FB3485 /* PrayerWidgetExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8ACFDE21668F111A9C86A7B7 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				EC1FF260B4A4C1D474AE9B5B /* Info.plist */,
+				D7EBF27F2072F0DF4A24AF35 /* PrayerWidget.entitlements */,
+				8153AC9962E872F6B9193FB4 /* PrayerWidget.swift */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
+		948C599EF7A1916B469C35BC /* App */ = {
+			isa = PBXGroup;
+			children = (
+				904998DB8A7316601A67EEC1 /* Info.plist */,
+				4F99CED5C9D5D950A6D5BF9F /* PrayerClock.entitlements */,
+				B0D027EE01927B57214C3C5A /* PrayerClockApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		D4392ED46E4755A247321E21 /* fonts */ = {
+			isa = PBXGroup;
+			children = (
+				F74DA95B87E18AD4AC0B52E0 /* plex_arabic_bold.ttf */,
+				C27B8F8C150A7CB704728155 /* plex_arabic_medium.ttf */,
+				0216648B9CB1933F090C9E42 /* plex_arabic_regular.ttf */,
+			);
+			name = fonts;
+			path = ../assets/fonts;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3BB8FB1E4B7BEBEBA454D058 /* PrayerWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C76D1A814582454E9D33D471 /* Build configuration list for PBXNativeTarget "PrayerWidgetExtension" */;
+			buildPhases = (
+				4B5F8F46B17522F1F971CC3A /* Sources */,
+				DF591624FED4AFA8675F04B6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PrayerWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = PrayerWidgetExtension;
+			productReference = 344B9432212F14FB16FB3485 /* PrayerWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		BAB6E04502220F447F2C72E3 /* PrayerClock */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ED60D1605559344436678A9B /* Build configuration list for PBXNativeTarget "PrayerClock" */;
+			buildPhases = (
+				3DE25A99934FFD600B11D6FC /* Sources */,
+				C5C32740BE00015455420170 /* Resources */,
+				6C590C531C073BEA167C3A68 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DBCD7BF39BA9A636023A719A /* PBXTargetDependency */,
+			);
+			name = PrayerClock;
+			packageProductDependencies = (
+			);
+			productName = PrayerClock;
+			productReference = 5CD5CE67450A062F03EA74C7 /* PrayerClock.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9466A2CBE7DE02695D582159 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					3BB8FB1E4B7BEBEBA454D058 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					BAB6E04502220F447F2C72E3 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 175BE57334EA390B64B53B68 /* Build configuration list for PBXProject "PrayerClockWidget" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 0C432E653462E2A1449D37DD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5D8FCEF68CBCB3B00392FB94 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BAB6E04502220F447F2C72E3 /* PrayerClock */,
+				3BB8FB1E4B7BEBEBA454D058 /* PrayerWidgetExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C5C32740BE00015455420170 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				463AF777DDF138D86DFCED81 /* plex_arabic_bold.ttf in Resources */,
+				78EB6DCEE04278E276986781 /* plex_arabic_medium.ttf in Resources */,
+				D58F498363CC3C0D89774832 /* plex_arabic_regular.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DF591624FED4AFA8675F04B6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C93286C213ED404AD9E8C6D9 /* plex_arabic_bold.ttf in Resources */,
+				15DB972DB44D52A9A165221B /* plex_arabic_medium.ttf in Resources */,
+				3B038EC40425953BB72D05D2 /* plex_arabic_regular.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3DE25A99934FFD600B11D6FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7CD14A19C3419B930A5D95B /* ClockFace.swift in Sources */,
+				E0B5548F4E28D082FCC1EE81 /* PrayerClockApp.swift in Sources */,
+				195E3FBFF16EA5BE9D556DF0 /* PrayerTimes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B5F8F46B17522F1F971CC3A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E17E3D542A1CCB9E90C5858 /* ClockFace.swift in Sources */,
+				ABCE82AF245F5093EE470EB5 /* PrayerTimes.swift in Sources */,
+				F7CA0C20B6AF1AD51CC84371 /* PrayerWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DBCD7BF39BA9A636023A719A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3BB8FB1E4B7BEBEBA454D058 /* PrayerWidgetExtension */;
+			targetProxy = 8B34B96624CBCC4E75DDEA1F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		124DF034914B74B7D72714A7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Widget/PrayerWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Widget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.halhamada.prayerclock.widget;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		2EF4FD3D1DD7C6A34D190958 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/PrayerClock.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.halhamada.prayerclock;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		356AE67E025ED4FC47A0790B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/PrayerClock.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.halhamada.prayerclock;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		398FC19F15EDA1C26B53D60E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		7705C9DC926DF375C4B2A6F6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Widget/PrayerWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Widget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.halhamada.prayerclock.widget;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F2BB3D07056248B1F64EFF90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		175BE57334EA390B64B53B68 /* Build configuration list for PBXProject "PrayerClockWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				398FC19F15EDA1C26B53D60E /* Debug */,
+				F2BB3D07056248B1F64EFF90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C76D1A814582454E9D33D471 /* Build configuration list for PBXNativeTarget "PrayerWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7705C9DC926DF375C4B2A6F6 /* Debug */,
+				124DF034914B74B7D72714A7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		ED60D1605559344436678A9B /* Build configuration list for PBXNativeTarget "PrayerClock" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				356AE67E025ED4FC47A0790B /* Debug */,
+				2EF4FD3D1DD7C6A34D190958 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9466A2CBE7DE02695D582159 /* Project object */;
+}
