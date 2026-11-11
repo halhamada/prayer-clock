@@ -32,7 +32,7 @@ struct Provider: AppIntentTimelineProvider {
 
     /// One entry a minute for the hands, for the next hour; then WidgetKit asks again.
     func timeline(for config: LocationIntent, in context: Context) async -> Timeline<Entry> {
-        let cal = Calendar.current
+        let cal = Calendar.gregorianLocal
         let first = cal.dateInterval(of: .minute, for: .now)?.start ?? .now
         let entries = (0..<60).map { Entry(date: cal.date(byAdding: .minute, value: $0, to: first)!, location: config.location) }
         return Timeline(entries: entries, policy: .atEnd)

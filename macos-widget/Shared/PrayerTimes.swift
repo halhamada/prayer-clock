@@ -85,7 +85,7 @@ enum Prayer: String, CaseIterable {
 struct DayTimes {
     let times: [Prayer: Date]
 
-    init(day: Date, location: Location, calendar: Calendar = .current) {
+    init(day: Date, location: Location, calendar: Calendar = .gregorianLocal) {
         let start = calendar.startOfDay(for: day)
         let c = calendar.dateComponents([.year, .month, .day], from: start)
         let noon = calendar.date(byAdding: .hour, value: 12, to: start)!
@@ -101,7 +101,7 @@ struct DayTimes {
     }
 
     /// The next prayer on the tiles after `now`, tomorrow's Fajr once they have all passed.
-    static func next(after now: Date, location: Location, calendar: Calendar = .current) -> (Prayer, Date) {
+    static func next(after now: Date, location: Location, calendar: Calendar = .gregorianLocal) -> (Prayer, Date) {
         let today = DayTimes(day: now, location: location)
         for p in [Prayer.fajr, .sunrise, .dhuhr, .maghrib] where today.times[p]! > now {
             return (p, today.times[p]!)
@@ -117,7 +117,7 @@ enum DateLines {
                          "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"]
 
     static func hijri(_ date: Date, offset: Int) -> String {
-        let weekday = Calendar.current.component(.weekday, from: date) - 1
+        let weekday = Calendar.gregorianLocal.component(.weekday, from: date) - 1
         var cal = Calendar(identifier: .islamicUmmAlQura)
         cal.timeZone = .current
         let shifted = cal.date(byAdding: .day, value: offset, to: date)!
@@ -133,7 +133,17 @@ enum DateLines {
     }
 
     static func h12(_ date: Date) -> String {
-        let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+        let c = Calendar.gregorianLocal.dateComponents([.hour, .minute], from: date)
         return String(format: "%d:%02d", (c.hour! % 12 == 0) ? 12 : c.hour! % 12, c.minute!)
+    }
+}
+
+extension Calendar {
+    /// The Gregorian calendar in the Mac's time zone. Calendar.current follows the region, and for Saudi Arabia
+    /// that is the Hijri calendar, which would feed Hijri dates into the solar formulas.
+    static var gregorianLocal: Calendar {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = .current
+        return c
     }
 }

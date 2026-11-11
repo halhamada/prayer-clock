@@ -73,7 +73,7 @@ struct AnalogClock: View {
             let s = side / 590
             let r = side * 0.46
             let c = CGPoint(x: g.size.width / 2, y: g.size.height / 2)
-            let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: now)
+            let comps = Calendar.gregorianLocal.dateComponents([.hour, .minute, .second], from: now)
             let minute = Double(comps.minute!) + Double(comps.second!) / 60
             let hour = Double(comps.hour! % 12) + minute / 60
             ZStack {
