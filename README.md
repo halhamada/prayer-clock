@@ -94,8 +94,25 @@ downloaded folder.
 .\deploy\install-from-windows.ps1 -Address 192.168.1.xxx -User pi
 ```
 
-The rest of this guide is in Arabic: the dashboard, the screen faces, moving to another network, the clock time
-without internet, and troubleshooting.
+### Moving the device to another network
+
+The **⚙ الشبكة (Network)** button in the dashboard shows the current network and the device's address, lists the
+networks in reach, and connects to any of them.
+
+When the device is moved to a place whose Wi-Fi it doesn't know, it waits a minute and a half (a router can be slow to
+come back after a power cut), then starts its own setup network and shows the steps on the TV:
+
+1. On your phone, join the Wi-Fi network **`PrayerClock`** with the password shown on the screen. Each device makes
+   its own password the first time.
+2. In the browser, open **`10.42.0.1:8080`** and enter the dashboard PIN.
+3. Choose the network of the new place and type its password.
+
+Once connected, the new address appears at the bottom of the screen for 10 minutes; join the same network with your
+phone and open it. With an Ethernet cable the device connects by itself, with no setup. The clock and the adhan keep
+running throughout. If no one uses the setup network, the device tries its saved networks again every five minutes.
+
+The rest of this guide is in Arabic: the dashboard, the screen faces, the clock time without internet, and
+troubleshooting.
 
 ## اللوحة
 
