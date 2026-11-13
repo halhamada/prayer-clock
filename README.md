@@ -1,5 +1,7 @@
 # ساعة الصلاة على Raspberry Pi Zero 2 W
 
+*Prayer clock for Raspberry Pi: turns a Pi and any HDMI TV into a mosque-style prayer clock with the adhan.*
+
 تحوّل الـ Pi وأي تلفزيون HDMI إلى ساعة صلاة مثل ساعات المساجد: ساعة بعقارب، التاريخ الهجري والميلادي،
 الفجر والشروق والظهر والمغرب، وعدّ تنازلي للوقت القادم. تشتغل وحدها بعد كل إعادة تشغيل، وفيها نظام الأذان والأدعية
 نفسه الموجود في مشروع MITV، بصيغة `schedule.json` نفسها ولوحة تحكم من الجوال.
@@ -12,16 +14,87 @@
 
 ## التثبيت
 
-1. افتح [Raspberry Pi Imager](https://www.raspberrypi.com/software/) واختر **Raspberry Pi OS Lite (64-bit)**.
-2. قبل الكتابة، من إعدادات التخصيص: اسم الجهاز `prayerclock`، اسم مستخدم وكلمة مرور، شبكة Wi-Fi، وفعّل **SSH**.
-3. ركّب البطاقة، وشغّل الـ Pi، وانتظر 3 دقايق لأول إقلاع.
-4. من ويندوز، داخل مجلد المشروع (غيّر `pi` لاسم المستخدم اللي اخترته):
+كل الخطوات من الـ Pi نفسه، ولا تحتاج ويندوز. *(English instructions below.)*
 
-```powershell
-.\deploy\install-from-windows.ps1 -Address prayerclock.local -User pi
+**1. جهّز البطاقة**
+- في برنامج [Raspberry Pi Imager](https://www.raspberrypi.com/software/) اختر **Raspberry Pi OS Lite (64-bit)**.
+- من إعدادات التخصيص اضبط: اسم مستخدم وكلمة مرور، وشبكة الواي فاي (أو استخدم كيبل الشبكة)، وفعّل **SSH**.
+- ركّب البطاقة في الجهاز وانتظر 3 دقائق لأول تشغيل.
+
+**2. ادخل على الجهاز** من أي كمبيوتر أو جوال. استبدل `pi` باسم المستخدم الذي اخترته، و`xxx` بعنوان الجهاز:
+
+```bash
+ssh pi@192.168.1.xxx
 ```
 
-السكربت ينسخ كل شي مع الصوتيات، يثبّت المتطلبات، ويعيد التشغيل. بعدها تظهر الساعة بعد كل إقلاع بدون أي تدخل.
+**3. نزّل النظام وثبّته.** اختر الفرع المناسب لجهازك:
+
+لجهاز **Pi Zero 2 W**:
+
+```bash
+sudo apt-get update && sudo apt-get install -y git
+git clone -b main https://github.com/halhamada/prayer-clock.git
+sudo bash prayer-clock/deploy/setup.sh && sudo reboot
+```
+
+لجهاز **Pi 3 B+**: نفس الأوامر، لكن غيّر `-b main` إلى `-b pi3b-plus`.
+
+بعد إعادة التشغيل تظهر الساعة وحدها بعد كل تشغيل، واللوحة على `http://عنوان-الجهاز:8080`.
+
+**طريقة ثانية من ويندوز:** من داخل مجلد المشروع على الكمبيوتر، يرسل هذا السكربت الملفات ويثبّتها ويعيد التشغيل:
+
+```powershell
+.\deploy\install-from-windows.ps1 -Address 192.168.1.xxx -User pi
+```
+
+## Installation (English)
+
+Everything runs on the Pi itself; no Windows needed.
+
+**1. Prepare the card**
+- In [Raspberry Pi Imager](https://www.raspberrypi.com/software/) choose **Raspberry Pi OS Lite (64-bit)**.
+- In the customisation settings set a username and password, your Wi-Fi network (or use an Ethernet cable), and
+  turn on **SSH**.
+- Put the card in the Pi and wait 3 minutes for the first boot.
+
+**2. Log in to the Pi** from any computer or phone, with your username and the Pi's address:
+
+```bash
+ssh pi@192.168.1.xxx
+```
+
+**3. Download and install.** Pick the branch for your board:
+
+For a **Pi Zero 2 W**:
+
+```bash
+sudo apt-get update && sudo apt-get install -y git
+git clone -b main https://github.com/halhamada/prayer-clock.git
+sudo bash prayer-clock/deploy/setup.sh && sudo reboot
+```
+
+For a **Pi 3 B+**: the same commands with `-b pi3b-plus` instead of `-b main`.
+
+After the reboot the clock comes up on its own at every start, and the dashboard is at `http://<pi-address>:8080`.
+The first visit asks you to choose a PIN for it.
+
+**To update later:**
+
+```bash
+cd prayer-clock && git pull && sudo bash deploy/setup.sh && sudo reboot
+```
+
+Settings, the audio schedule and uploaded files are kept: they live in `/var/lib/prayer-clock`, outside the
+downloaded folder.
+
+**From Windows instead:** inside the project folder, this script copies the files, installs them and reboots:
+
+```powershell
+.\deploy\install-from-windows.ps1 -Address 192.168.1.xxx -User pi
+```
+
+The rest of this guide is in Arabic: the dashboard, the screen faces, moving to another network, the clock time
+without internet, and troubleshooting.
 
 ## اللوحة
 
@@ -76,7 +149,14 @@ aplay -L
 
 ## التحديث
 
-شغّل سكربت التثبيت مرة ثانية. الجدول والإعدادات والملفات المرفوعة ما تتأثر لأنها في `/var/lib/prayer-clock`.
+على الجهاز:
+
+```bash
+cd prayer-clock && git pull && sudo bash deploy/setup.sh && sudo reboot
+```
+
+أو شغّل سكربت ويندوز مرة ثانية. الإعدادات والجدول والملفات المرفوعة تبقى كما هي، لأنها محفوظة في
+`/var/lib/prayer-clock` خارج المجلد الذي نزّلته.
 
 ## التطوير
 
@@ -103,4 +183,4 @@ python app/main.py --preview frame.png --at 2026-01-30T12:52:05 --size 720x1280
 | `deploy/` | التثبيت وخدمة systemd |
 
 خطا IBM Plex Sans Arabic و Playfair Display برخصة SIL OFL. صور العتبات برخص CC BY و CC BY-SA، وأسماء مصوريها في
-`app/photoface.py` وعلى الشاشة.
+`app/backgrounds.py` وعلى الشاشة.
